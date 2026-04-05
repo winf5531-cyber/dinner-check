@@ -123,9 +123,6 @@ export default function Admin() {
           <button className="btn ghost" onClick={handlePrintQR} style={{ flex: 1, border: '1px solid #d1d5db', backgroundColor: 'white' }}>
             <Printer size={18} /> QR코드 출력
           </button>
-          <button className="btn danger" onClick={handleClearAll} style={{ width: 'auto' }}>
-            전체 초기화
-          </button>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', padding: '1rem', borderRadius: '12px', border: '1px solid #e5e7eb', flexWrap: 'wrap' }}>
@@ -196,6 +193,16 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+      </div>
+      
+      <div className="no-print" style={{ textAlign: 'right', marginTop: '1rem' }}>
+        <button 
+          className="btn danger" 
+          onClick={handleClearAll} 
+          style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fca5a5', boxShadow: 'none' }}
+        >
+          데이터 전체 초기화
+        </button>
       </div>
 
       <div className="print-only">

@@ -112,6 +112,25 @@ export default function Home() {
           <h2 style={{ marginBottom: '1rem' }}>카메라를 켜주세요!</h2>
           <p style={{ color: '#4b5563', lineHeight: '1.6' }}>급식실에 부착된 <strong>QR 코드</strong>를<br/>기본 카메라 앱으로 스캔해야만<br/>이 화면이 열리며 출석체크가 가능합니다.<br/><br/><span style={{ fontSize: '0.85rem', opacity: 0.8 }}>(집이나 교무실에서의 원격 체크 방지)</span></p>
         </div>
+        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+          <p style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '0.5rem' }}>
+            휴대폰 홈 화면에 추가해서 사용하시면 더욱 편리합니다.
+          </p>
+          <button 
+            className="btn" 
+            style={{ margin: '0.5rem auto 0', width: 'auto', padding: '0.8rem 1.5rem', fontSize: '1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            onClick={() => {
+              if (!deferredPrompt) {
+                alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [현재 페이지 추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
+                return;
+              }
+              deferredPrompt.prompt();
+              deferredPrompt.userChoice.then(() => setDeferredPrompt(null));
+            }}
+          >
+            <Download size={20} /> 📱 스마트폰 바탕화면에 설치하기
+          </button>
+        </div>
       </div>
     );
   }
