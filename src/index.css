@@ -225,7 +225,15 @@ tr:last-child td {
     size: A4 portrait;
     margin: 0;
   }
+  
+  /* 인쇄 시 변형(transform)과 애니메이션을 강제 해제하여 절대 좌표 오작동 방지 */
+  * {
+    animation: none !important;
+    transform: none !important;
+  }
+
   html, body, #root {
+    max-width: 100% !important; /* 모바일용 480px 제한 해제 */
     margin: 0 !important;
     padding: 0 !important;
     height: auto !important;
