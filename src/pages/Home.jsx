@@ -195,32 +195,17 @@ export default function Home() {
         </p>
         <button 
           className="btn" 
-          style={{ 
-            marginTop: '1rem', 
-            width: '100%', 
-            padding: '1.2rem', 
-            fontSize: '1.2rem', 
-            backgroundColor: '#3b82f6', 
-            color: 'white', 
-            borderRadius: '16px',
-            boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.4)',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            fontWeight: 'bold'
-          }}
+          style={{ margin: '1rem auto 0', width: 'auto', padding: '0.8rem 1.5rem', fontSize: '1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
           onClick={() => {
             if (!deferredPrompt) {
-              alert('[아이폰/사파리 안내]\\n\\n화면 아래 📤[공유] 아이콘을 누른 후 👉 [홈 화면에 추가]를 눌러주세요!\\n\\n(안드로이드는 우측 상단 ⁝ 메뉴에서 추가 가능합니다)');
+              alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [현재 페이지 추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
               return;
             }
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(() => setDeferredPrompt(null));
           }}
         >
-          <Download size={24} /> 바탕화면에 '석식체크' 설치하기
+          <Download size={20} /> 📱 스마트폰 바탕화면에 설치하기
         </button>
       </div>
     </div>

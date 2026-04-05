@@ -238,7 +238,11 @@ tr:last-child td {
   }
   .print-only {
     display: block !important;
-    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    width: 100vw;
     margin: 0 !important;
     padding: 100px 0 !important;
     background: white;
