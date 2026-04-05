@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { getCheckins, removeCheckin, clearAllData } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer } from 'lucide-react';
@@ -22,11 +23,18 @@ export default function Admin() {
   useEffect(() => {
     if (isAuthenticated) {
       loadData();
-      // 실시간 데이터 감지 (5초마다 조용히 체크)
-      const interval = setInterval(() => {
-        loadData();
-      }, 5000);
-      return () => clearInterval(interval);
+      
+      // Supabase Realtime (웹소켓) 기능 연결: 데이터베이스 변경 시 즉시 갱신
+      const channel = supabase
+        .channel('admin-checkins')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'checkins' }, (payload) => {
+          loadData();
+        })
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isAuthenticated]);
 
