@@ -58,14 +58,6 @@ export default function Home() {
     };
   }, [today]);
 
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        setDeferredPrompt(null);
-      });
-    }
-  };
 
   const handleNameChange = (e) => {
     const val = e.target.value;
@@ -201,15 +193,34 @@ export default function Home() {
         <p style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '0.5rem' }}>
           휴대폰 홈 화면에 추가해서 사용하시면 더욱 편리합니다.
         </p>
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '1rem', lineHeight: '1.5' }}>
-          💡 <strong>아이폰(Safari)</strong>을 사용하시는 선생님께서는<br/>화면 아래쪽의 <strong>[공유]</strong> 아이콘을 누른 뒤<br/><strong>[홈 화면에 추가]</strong>를 선택해 주세요!
-        </p>
         <button 
-          className="btn ghost" 
-          style={{ margin: '0 auto', width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-          onClick={handleInstallClick}
+          className="btn" 
+          style={{ 
+            marginTop: '1rem', 
+            width: '100%', 
+            padding: '1.2rem', 
+            fontSize: '1.2rem', 
+            backgroundColor: '#3b82f6', 
+            color: 'white', 
+            borderRadius: '16px',
+            boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.4)',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            fontWeight: 'bold'
+          }}
+          onClick={() => {
+            if (!deferredPrompt) {
+              alert('[아이폰/사파리 안내]\\n\\n화면 아래 📤[공유] 아이콘을 누른 후 👉 [홈 화면에 추가]를 눌러주세요!\\n\\n(안드로이드는 우측 상단 ⁝ 메뉴에서 추가 가능합니다)');
+              return;
+            }
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => setDeferredPrompt(null));
+          }}
         >
-          <Download size={16} /> 바탕화면에 앱으로 설치하기
+          <Download size={24} /> 바탕화면에 '석식체크' 설치하기
         </button>
       </div>
     </div>
