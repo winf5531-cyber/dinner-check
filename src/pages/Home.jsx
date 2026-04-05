@@ -121,7 +121,7 @@ export default function Home() {
             style={{ margin: '0.5rem auto 0', width: 'auto', padding: '0.8rem 1.5rem', fontSize: '1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
             onClick={() => {
               if (!deferredPrompt) {
-                alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
+                alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [앱 설치] 또는 [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
                 return;
               }
               deferredPrompt.prompt();
@@ -217,7 +217,7 @@ export default function Home() {
           style={{ margin: '1rem auto 0', width: 'auto', padding: '0.8rem 1.5rem', fontSize: '1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
           onClick={() => {
             if (!deferredPrompt) {
-                alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
+              alert('[안드로이드/삼성인터넷]\n화면 아래 ☰[메뉴] ➔ [추가] ➔ [홈 화면]\n\n[안드로이드/크롬]\n화면 상단 ⁝[메뉴] ➔ [앱 설치] 또는 [홈 화면에 추가]\n\n[아이폰/사파리]\n화면 아래 📤[공유] ➔ [홈 화면에 추가]');
               return;
             }
             deferredPrompt.prompt();
