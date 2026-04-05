@@ -16,7 +16,7 @@ export default defineConfig({
         description: '교직원 석식 확인 프로그램',
         theme_color: '#ffffff',
         background_color: '#ffffff',
-        display: 'minimal-ui',
+        display: 'browser',
         icons: [
           {
             src: '/pwa-192x192.png',
