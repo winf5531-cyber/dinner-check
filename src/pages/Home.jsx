@@ -204,15 +204,13 @@ export default function Home() {
         <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '1rem', lineHeight: '1.5' }}>
           💡 <strong>아이폰(Safari)</strong>을 사용하시는 선생님께서는<br/>화면 아래쪽의 <strong>[공유]</strong> 아이콘을 누른 뒤<br/><strong>[홈 화면에 추가]</strong>를 선택해 주세요!
         </p>
-        {deferredPrompt && (
-          <button 
-            className="btn ghost" 
-            style={{ margin: '0 auto', width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-            onClick={handleInstallClick}
-          >
-            <Download size={16} /> 안드로이드 홈 화면에 추가
-          </button>
-        )}
+        <button 
+          className="btn ghost" 
+          style={{ margin: '0 auto', width: 'auto', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+          onClick={handleInstallClick}
+        >
+          <Download size={16} /> 바탕화면에 앱으로 설치하기
+        </button>
       </div>
     </div>
   );
