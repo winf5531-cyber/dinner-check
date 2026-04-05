@@ -19,14 +19,20 @@ export default defineConfig({
         display: 'browser',
         icons: [
           {
-            src: '/vite.svg',
+            src: '/dinner-icon.png',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/png'
           },
           {
-            src: '/vite.svg',
+            src: '/dinner-icon.png',
             sizes: '512x512',
-            type: 'image/svg+xml'
+            type: 'image/png'
+          },
+          {
+            src: '/dinner-icon.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }
