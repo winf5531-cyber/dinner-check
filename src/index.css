@@ -237,17 +237,13 @@ tr:last-child td {
     display: none !important;
   }
   .print-only {
-    display: flex !important;
-    position: relative;
+    display: block !important;
     width: 100%;
-    min-height: 100vh;
     margin: 0 !important;
-    padding: 2rem 0 !important;
+    padding: 100px 0 !important;
     background: white;
     z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    text-align: center;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-after: avoid !important;

@@ -199,9 +199,11 @@ export default function Admin() {
       </div>
 
       <div className="print-only">
-        <h1 style={{ fontSize: '4rem', marginBottom: '2rem', textAlign: 'center', color: '#111827' }}>🍽️ 석식 체크 🍽️</h1>
+        <h1 style={{ fontSize: '4rem', marginBottom: '2rem', textAlign: 'center', color: '#111827' }}>석식 체크 출석부</h1>
         <p style={{ fontSize: '2rem', marginBottom: '4rem', textAlign: 'center', color: '#374151' }}>스마트폰 카메라로<br/>아래 QR 코드를 스캔하세요!</p>
-        <QRCodeSVG value={`${window.location.origin}?scan=ok`} size={500} level="H" />
+        <div style={{ display: 'inline-block', padding: '2rem', background: 'white', border: '5px solid black', borderRadius: '20px' }}>
+          <QRCodeSVG value={`${window.location.origin}?scan=ok`} size={400} level="H" />
+        </div>
       </div>
     </div>
   );
