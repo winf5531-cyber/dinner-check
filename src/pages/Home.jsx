@@ -8,7 +8,7 @@ export default function Home() {
   const [name, setName] = useState('');
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [animate, setAnimate] = useState(false);
-  const [isScanned, setIsScanned] = useState(true); // 우선 테스트 중이므로 QR 스캔 통과 상태로 고정
+  const [isScanned, setIsScanned] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [filteredNames, setFilteredNames] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -24,8 +24,7 @@ export default function Home() {
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // 1. QR 스캔 파라미터 확인 (현재 테스트를 위해 비활성화 상태)
-    /*
+    // 1. QR 스캔 파라미터 확인
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('scan') === 'ok') {
       sessionStorage.setItem('scanned_today', today);
@@ -37,7 +36,6 @@ export default function Home() {
         setIsScanned(true);
       }
     }
-    */
 
     // 2. 본인이 썼던 이름이 로컬에 남아있으면 자동입력
     const savedName = localStorage.getItem('my_name');
