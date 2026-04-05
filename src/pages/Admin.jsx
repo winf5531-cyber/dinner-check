@@ -11,7 +11,9 @@ import { ko } from 'date-fns/locale';
 
 export default function Admin() {
   const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('adminAuth') === 'true';
+  });
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -20,6 +22,11 @@ export default function Admin() {
   useEffect(() => {
     if (isAuthenticated) {
       loadData();
+      // 실시간 데이터 감지 (5초마다 조용히 체크)
+      const interval = setInterval(() => {
+        loadData();
+      }, 5000);
+      return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
@@ -43,6 +50,7 @@ export default function Admin() {
   const handleLogin = () => {
     if (password === '1234') {
       setIsAuthenticated(true);
+      sessionStorage.setItem('adminAuth', 'true');
     } else {
       alert('비밀번호가 틀렸습니다.');
     }
