@@ -241,10 +241,9 @@ tr:last-child td {
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    width: 100vw;
+    width: 100%;
     margin: 0 !important;
-    padding: 100px 0 !important;
+    padding: 2rem 0 !important;
     background: white;
     z-index: 9999;
     text-align: center;
