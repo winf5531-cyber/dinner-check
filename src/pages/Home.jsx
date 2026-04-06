@@ -47,11 +47,12 @@ export default function Home() {
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // 1. QR 스캔 파라미터 확인
+    // 1. QR 스캔 파라미터 확인 (폭탄 암호 적용)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('scan') === 'ok') {
+    if (urlParams.get('token') === 'dinner_pass_xyz_99812A') {
       sessionStorage.setItem('scanned_today', today);
       setIsScanned(true);
+      // 암호가 적힌 원래 URL을 즉시, 현재 주소창에서 흔적도 없이 증발시킴
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
       const scannedStatus = sessionStorage.getItem('scanned_today');
