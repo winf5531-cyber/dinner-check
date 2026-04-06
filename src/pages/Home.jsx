@@ -83,7 +83,13 @@ export default function Home() {
       return;
     }
     
-    await saveCheckin(name.trim(), today);
+    // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
+    const result = await saveCheckin(name.trim(), today);
+    if (!result) {
+      alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
+      return;
+    }
+
     localStorage.setItem('my_name', name.trim());
     setHasCheckedIn(true);
     setAnimate(true);
@@ -95,9 +101,13 @@ export default function Home() {
 
   const handleCancelCheckin = async () => {
     if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
-      await removeCheckinByNameAndDate(name.trim(), today);
+      const success = await removeCheckinByNameAndDate(name.trim(), today);
+      if (!success) {
+        alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
+        return;
+      }
       setHasCheckedIn(false);
-      // 이름은 그대로 두어 수정할 수 있게 합니다.
+      // 이름은 그대로 두어 다시 수정/입력할 수 있게 합니다.
     }
   };
 

@@ -137,7 +137,9 @@ export const removeCheckinByNameAndDate = async (name, date) => {
     
   if (error) {
     console.error('Error removing checkin by name and date:', error);
+    return false;
   }
+  return true;
 };
 
 export const clearAllData = async () => {
