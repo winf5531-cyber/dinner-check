@@ -117,9 +117,9 @@ export default function Admin() {
     }
     worksheet.getColumn(lastColIndex).width = 8;
 
+    let currentRowIdx = 3;
     STAFF_LIST.forEach((staff) => {
       const row = [staff.id, staff.role, staff.name];
-      let cumulative = 0;
       
       weekdays.forEach(d => {
         const dateStr = format(d, 'yyyy-MM-dd');
@@ -127,13 +127,14 @@ export default function Admin() {
         const checkedIn = data.find(c => c.name === staff.name && c.date === dateStr);
         if (checkedIn) {
           row.push('O');
-          cumulative++;
         } else {
           row.push('');
         }
       });
       
-      row.push(cumulative);
+      // 엑셀 내장 함수 적용 (예: COUNTIF(D3:Z3, "O"))
+      const endColLetter = String.fromCharCode(64 + 3 + weekdays.length);
+      row.push({ formula: `COUNTIF(D${currentRowIdx}:${endColLetter}${currentRowIdx}, "O")` });
       
       const newRow = worksheet.addRow(row);
       newRow.eachCell((cell, colNumber) => {
@@ -144,6 +145,7 @@ export default function Admin() {
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9C4' } };
         }
       });
+      currentRowIdx++;
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
