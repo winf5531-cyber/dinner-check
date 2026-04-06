@@ -219,26 +219,6 @@ export default function Admin() {
       </div>
 
       <div className="glass-card no-print">
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', flex: 2, gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
-            <span style={{ fontSize: '0.9rem', color: '#6b7280', whiteSpace: 'nowrap' }}>출석부 월 선택:</span>
-            <DatePicker
-              selected={exportMonth}
-              onChange={(date) => setExportMonth(date)}
-              locale={ko}
-              dateFormat="yyyy년 MM월"
-              showMonthYearPicker
-              className="custom-datepicker"
-            />
-            <button className="btn success" onClick={handleExport} style={{ flex: 1, margin: 0 }}>
-              <Download size={18} /> 엑셀 다운로드
-            </button>
-          </div>
-          <button className="btn ghost" onClick={handlePrintQR} style={{ flex: 1, border: '1px solid #d1d5db', backgroundColor: 'white' }}>
-            <Printer size={18} /> QR코드 출력
-          </button>
-        </div>
-
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center', justifyContent: 'space-between', background: '#f9fafb', padding: '1rem', borderRadius: '12px', border: '1px solid #e5e7eb', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button 
@@ -319,6 +299,26 @@ export default function Admin() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flex: 2, gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280', whiteSpace: 'nowrap' }}>출석부 월 선택:</span>
+            <DatePicker
+              selected={exportMonth}
+              onChange={(date) => setExportMonth(date)}
+              locale={ko}
+              dateFormat="yyyy년 MM월"
+              showMonthYearPicker
+              className="custom-datepicker"
+            />
+            <button className="btn success" onClick={handleExport} style={{ flex: 1, margin: 0 }}>
+              <Download size={18} /> 엑셀 다운로드
+            </button>
+          </div>
+          <button className="btn ghost" onClick={handlePrintQR} style={{ flex: 1, border: '1px solid #d1d5db', backgroundColor: 'white' }}>
+            <Printer size={18} /> QR코드 출력
+          </button>
         </div>
       </div>
       
