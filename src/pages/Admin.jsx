@@ -186,7 +186,7 @@ export default function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="animate-up" style={{ textAlign: 'center' }}>
+      <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto', textAlign: 'center' }}>
         <Lock size={48} color="#9ca3af" style={{ margin: '0 auto 1.5rem', display: 'block' }} />
         <h1>관리자 화면</h1>
         <p>비밀번호를 입력해주세요.</p>
