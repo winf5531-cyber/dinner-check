@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, removeCheckin, clearAllData, STAFF_LIST } from '../lib/db';
+import { getCheckins, removeCheckin, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +20,14 @@ export default function Admin() {
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [exportMonth, setExportMonth] = useState(new Date());
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
+  const [manualDate, setManualDate] = useState(new Date());
+  const [manualSearchQuery, setManualSearchQuery] = useState('');
+  const [showManualDropdown, setShowManualDropdown] = useState(false);
+  const manualFilteredStaff = manualSearchQuery.trim() === '' ? [] : STAFF_LIST.filter(s => s.name.includes(manualSearchQuery));
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -178,6 +186,58 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteMultiple = async () => {
+    if (selectedIds.length === 0) return;
+    if (confirm(`${selectedIds.length}개의 데이터가 완전히 삭제되며 복구할 수 없습니다. 그래도 삭제하시겠습니까?`)) {
+      await Promise.all(selectedIds.map(id => removeCheckin(id)));
+      setSelectedIds([]);
+      loadData();
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(displayedData.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (e, id) => {
+    if (e.target.checked) {
+      setSelectedIds([...selectedIds, id]);
+    } else {
+      setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    const day = manualDate.getDay();
+    if (day === 0 || day === 6) {
+      alert("선택한 날짜는 주말입니다. 평일을 선택해주세요.");
+      return;
+    }
+
+    const staff = STAFF_LIST.find(s => s.name === manualSearchQuery);
+    if (!staff) {
+      alert("입력하신 이름이 교직원 명단에 없습니다.");
+      return;
+    }
+
+    const dateStr = format(manualDate, 'yyyy-MM-dd');
+    const exists = data.find(d => d.name === staff.name && d.date === dateStr);
+    if (exists) {
+      alert("이미 해당 날짜에 기록이 존재합니다.");
+      return;
+    }
+
+    await saveCheckin(staff.name, dateStr);
+    setIsManualEntryOpen(false);
+    setManualSearchQuery('');
+    setManualDate(new Date());
+    loadData();
+  };
+
   const handleClearAll = async () => {
     if (confirm('정말로 모든 데이터를 초기화하시겠습니까? (이 작업은 되돌릴 수 없습니다!)')) {
       await clearAllData();
@@ -216,11 +276,16 @@ export default function Admin() {
 
   return (
     <div className="animate-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1 style={{ textAlign: 'left', margin: 0 }}>영양교사 대시보드</h1>
-        <button className="btn ghost" style={{ width: 'auto' }} onClick={() => navigate('/')}>
-          뒤로
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn primary" style={{ width: 'auto', backgroundColor: '#3b82f6', color: 'white' }} onClick={() => setIsManualEntryOpen(true)}>
+            수동 데이터 입력
+          </button>
+          <button className="btn ghost" style={{ width: 'auto' }} onClick={() => navigate('/')}>
+            뒤로
+          </button>
+        </div>
       </div>
 
       <div className="glass-card no-print">
@@ -259,6 +324,14 @@ export default function Admin() {
           <table>
             <thead>
               <tr>
+                <th style={{ width: '40px', textAlign: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={displayedData.length > 0 && selectedIds.length === displayedData.length}
+                    onChange={handleSelectAll}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </th>
                 <th>순번</th>
                 <th>직위</th>
                 <th>이름</th>
@@ -275,13 +348,21 @@ export default function Admin() {
             <tbody>
               {displayedData.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
+                  <td colSpan="8" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
                 </tr>
               ) : (
                 displayedData.map((item) => {
                   const staff = getStaffInfo(item.name);
                   return (
                   <tr key={item.id}>
+                    <td style={{ textAlign: 'center' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.includes(item.id)}
+                        onChange={(e) => handleSelectOne(e, item.id)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </td>
                     <td style={{ color: '#6b7280' }}>{staff.id}</td>
                     <td style={{ color: '#6b7280' }}>{staff.role}</td>
                     <td style={{ fontWeight: 600 }}>{item.name}</td>
@@ -304,6 +385,21 @@ export default function Admin() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem' }}>
+          <button 
+            className="btn danger" 
+            onClick={handleDeleteMultiple}
+            disabled={selectedIds.length === 0}
+            style={{ 
+              width: 'auto', margin: 0, padding: '0.6rem 1.5rem', 
+              opacity: selectedIds.length === 0 ? 0.4 : 1,
+              cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer'
+            }}
+          >
+            선택된 데이터 삭제 ({selectedIds.length})
+          </button>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
@@ -346,6 +442,78 @@ export default function Admin() {
           </div>
         </center>
       </div>
+
+      {isManualEntryOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div className="glass-card" style={{ width: '90%', maxWidth: '400px', backgroundColor: '#fff', padding: '2rem', borderRadius: '20px' }}>
+            <h2 style={{ marginTop: 0, textAlign: 'center', color: '#111827' }}>수동 데이터 입력</h2>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#374151', fontSize: '0.9rem', fontWeight: 500 }}>날짜 선택</label>
+              <DatePicker
+                selected={manualDate}
+                onChange={(date) => setManualDate(date)}
+                locale={ko}
+                dateFormat="yyyy-MM-dd"
+                className="custom-datepicker"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem', position: 'relative' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#374151', fontSize: '0.9rem', fontWeight: 500 }}>이름 입력</label>
+              <input
+                type="text"
+                placeholder="교직원 이름을 입력하세요"
+                value={manualSearchQuery}
+                onFocus={() => setShowManualDropdown(true)}
+                onChange={(e) => {
+                  setManualSearchQuery(e.target.value);
+                  setShowManualDropdown(true);
+                }}
+                onBlur={() => setTimeout(() => setShowManualDropdown(false), 200)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #d1d5db', boxSizing: 'border-box', fontSize: '1rem', outline: 'none' }}
+              />
+              
+              {showManualDropdown && manualFilteredStaff.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, right: 0, background: 'white',
+                  borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  maxHeight: '150px', overflowY: 'auto', zIndex: 10, marginTop: '4px'
+                }}>
+                  {manualFilteredStaff.map(s => (
+                    <div 
+                      key={s.id} 
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setManualSearchQuery(s.name);
+                        setShowManualDropdown(false);
+                      }}
+                      style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f3f4f6' }}
+                    >
+                      <span style={{ color: '#6b7280', fontSize: '0.85rem', marginRight: '8px' }}>{s.role}</span>
+                      <span style={{ fontWeight: 500, color: '#111827' }}>{s.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button className="btn success" style={{ flex: 1, margin: 0, padding: '0.75rem' }} onClick={handleManualSubmit}>
+                확인
+              </button>
+              <button className="btn ghost" style={{ flex: 1, margin: 0, padding: '0.75rem', backgroundColor: '#f3f4f6' }} onClick={() => setIsManualEntryOpen(false)}>
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
