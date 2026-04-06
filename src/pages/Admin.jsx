@@ -153,7 +153,13 @@ export default function Admin() {
   };
 
   const getCumulativeCount = (name) => {
-    return data.filter(d => d.name === name).length;
+    if (viewMode === 'all') {
+      return data.filter(d => d.name === name).length;
+    } else {
+      // 날짜별 보기 모드일 때는 선택된 달의 누적 횟수만 계산
+      const targetMonthPrefix = selectedDate.substring(0, 7); // 'yyyy-MM'
+      return data.filter(d => d.name === name && d.date.startsWith(targetMonthPrefix)).length;
+    }
   };
 
   const getStaffInfo = (name) => {
@@ -273,7 +279,11 @@ export default function Admin() {
                 <th>이름</th>
                 <th>날짜</th>
                 <th>체크 시간</th>
-                <th>누적 횟수</th>
+                <th>
+                  {viewMode === 'all' 
+                    ? "전체 누적 횟수" 
+                    : `${parseInt(selectedDate.substring(5, 7), 10)}월의 누적 횟수`}
+                </th>
                 <th>관리</th>
               </tr>
             </thead>
