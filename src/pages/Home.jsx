@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { CheckCircle, Utensils, Download } from 'lucide-react';
-import { saveCheckin, getCheckins, removeCheckinByNameAndDate, STAFF_LIST } from '../lib/db';
+import { saveCheckin, checkDuplicateCheckin, removeCheckinByNameAndDate, STAFF_LIST } from '../lib/db';
 
 const InstallPrompt = ({ deferredPrompt, setDeferredPrompt }) => (
   <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
@@ -66,10 +66,9 @@ export default function Home() {
     if (savedName) {
       setName(savedName);
       
-      // 이미 체크했는지 확인 (Supabase)
+      // 이미 체크했는지 단일 쿼리로 확인 (전체 DB 호출 방지)
       const checkStatus = async () => {
-        const allCheckins = await getCheckins();
-        const alreadyChecked = allCheckins.some(c => c.name === savedName && c.date === today);
+        const alreadyChecked = await checkDuplicateCheckin(savedName, today);
         if(alreadyChecked) {
           setHasCheckedIn(true);
         }
