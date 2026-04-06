@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { CheckCircle, Utensils, Download } from 'lucide-react';
-import { saveCheckin, getCheckins, removeCheckinByNameAndDate, TEACHER_LIST } from '../lib/db';
+import { saveCheckin, getCheckins, removeCheckinByNameAndDate, STAFF_LIST } from '../lib/db';
 
 export default function Home() {
   const [name, setName] = useState('');
@@ -67,7 +67,7 @@ export default function Home() {
       return;
     }
     // 중간에 포함된 이름이 아닌, 입력한 글자로 '시작'하는 이름만 필터링
-    const matches = TEACHER_LIST.filter(t => t.startsWith(val.trim()) && t !== val.trim());
+    const matches = STAFF_LIST.filter(t => t.name.startsWith(val.trim()) && t.name !== val.trim());
     setFilteredNames(matches);
     setShowDropdown(matches.length > 0);
   };
@@ -166,13 +166,14 @@ export default function Home() {
               />
               {showDropdown && (
                 <ul className="dropdown-list">
-                  {filteredNames.map((tName, idx) => (
+                  {filteredNames.map((staff, idx) => (
                     <li 
                       key={idx} 
                       className="dropdown-item"
-                      onClick={() => handleSelectName(tName)}
+                      onClick={() => handleSelectName(staff.name)}
                     >
-                      {tName}
+                      <span style={{ fontSize: '0.8rem', color: '#6b7280', marginRight: '0.5rem' }}>{staff.role}</span>
+                      {staff.name}
                     </li>
                   ))}
                 </ul>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, removeCheckin, clearAllData } from '../lib/db';
+import { getCheckins, removeCheckin, clearAllData, STAFF_LIST } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { QRCodeSVG } from 'qrcode.react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -41,11 +42,18 @@ export default function Admin() {
   const loadData = async () => {
     const raw = await getCheckins();
     raw.sort((a, b) => {
-      // 1순위: 날짜 내림차순 (최신 날짜가 위로)
+      const staffA = STAFF_LIST.find(s => s.name === a.name);
+      const staffB = STAFF_LIST.find(s => s.name === b.name);
+      const idA = staffA ? staffA.id : 999;
+      const idB = staffB ? staffB.id : 999;
+      
+      // 1순위: 순번 오름차순
+      if (idA !== idB) return idA - idB;
+
+      // 2순위: 날짜 내림차순 (최신 날짜가 위로)
       if (a.date > b.date) return -1;
       if (a.date < b.date) return 1;
-      // 2순위: 이름 가나다 오름차순
-      return a.name.localeCompare(b.name);
+      return 0;
     });
     setData(raw);
   };
@@ -64,19 +72,86 @@ export default function Admin() {
     }
   };
 
-  const handleExport = () => {
-    let exportData = displayedData;
-    if (exportData.length === 0) {
-      exportData = [{ name: '', date: '', timestamp: new Date().toISOString() }];
+  const handleExport = async () => {
+    const targetDate = new Date(selectedDate);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth(); // 0-based
+
+    // 평일 계산
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const weekdays = [];
+    for (let i = 1; i <= daysInMonth; i++) {
+        const d = new Date(year, month, i);
+        if (d.getDay() !== 0 && d.getDay() !== 6) { // Mon-Fri
+            weekdays.push(d);
+        }
     }
-    const ws = XLSX.utils.json_to_sheet(exportData.map(item => ({
-      '날짜': item.date || '',
-      '이름': item.name || '',
-      '체크시간': item.name ? format(new Date(item.timestamp), 'yyyy-MM-dd HH:mm:ss') : ''
-    })));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "석식체크");
-    XLSX.writeFile(wb, `석식명부_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`${month + 1}월 출석`);
+
+    const lastColIndex = 3 + weekdays.length + 1;
+
+    worksheet.mergeCells(1, 1, 1, lastColIndex);
+    worksheet.getCell(1, 1).value = `${month + 1}월 교직원 석식 확인`;
+    worksheet.getCell(1, 1).font = { size: 16, bold: true };
+    worksheet.getCell(1, 1).alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getRow(1).height = 30;
+
+    const headerRow = ['순번', '직', '성명', ...weekdays.map(d => `${d.getDate()}일(${['일','월','화','수','목','금','토'][d.getDay()]})`), '총'];
+    worksheet.addRow(headerRow);
+    const headerRowObj = worksheet.getRow(2);
+    headerRowObj.eachCell((cell) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } };
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = { top: { style:'thin' }, left: { style:'thin' }, bottom: { style:'thin' }, right: { style:'thin' } };
+    });
+    worksheet.getCell(2, lastColIndex).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF08A' } };
+
+    worksheet.getColumn(1).width = 6;
+    worksheet.getColumn(2).width = 10;
+    worksheet.getColumn(3).width = 12;
+    for (let i = 0; i < weekdays.length; i++) {
+      worksheet.getColumn(4 + i).width = 11;
+    }
+    worksheet.getColumn(lastColIndex).width = 8;
+
+    STAFF_LIST.forEach((staff) => {
+      const row = [staff.id, staff.role, staff.name];
+      let cumulative = 0;
+      
+      weekdays.forEach(d => {
+        const dateStr = format(d, 'yyyy-MM-dd');
+        // raw data 자체(data)에서 누적 조회
+        const checkedIn = data.find(c => c.name === staff.name && c.date === dateStr);
+        if (checkedIn) {
+          row.push('O');
+          cumulative++;
+        } else {
+          row.push('');
+        }
+      });
+      
+      row.push(cumulative);
+      
+      const newRow = worksheet.addRow(row);
+      newRow.eachCell((cell) => {
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = { top: { style:'thin' }, left: { style:'thin' }, bottom: { style:'thin' }, right: { style:'thin' } };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${year}년_${month + 1}월_석식체크.xlsx`);
+  };
+
+  const getCumulativeCount = (name) => {
+    return data.filter(d => d.name === name).length;
+  };
+
+  const getStaffInfo = (name) => {
+    return STAFF_LIST.find(s => s.name === name) || { role: '-', id: '-' };
   };
 
   const handleDelete = async (id) => {
@@ -176,25 +251,33 @@ export default function Admin() {
           <table>
             <thead>
               <tr>
+                <th>순번</th>
+                <th>직위</th>
                 <th>이름</th>
                 <th>날짜</th>
                 <th>체크 시간</th>
+                <th>누적 횟수</th>
                 <th>관리</th>
               </tr>
             </thead>
             <tbody>
               {displayedData.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
+                  <td colSpan="7" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
                 </tr>
               ) : (
-                displayedData.map((item) => (
+                displayedData.map((item) => {
+                  const staff = getStaffInfo(item.name);
+                  return (
                   <tr key={item.id}>
+                    <td style={{ color: '#6b7280' }}>{staff.id}</td>
+                    <td style={{ color: '#6b7280' }}>{staff.role}</td>
                     <td style={{ fontWeight: 600 }}>{item.name}</td>
                     <td><span className="badge green">{item.date}</span></td>
                     <td style={{ fontSize: '0.85rem', color: '#6b7280' }}>
                       {format(new Date(item.timestamp), 'HH:mm:ss')}
                     </td>
+                    <td style={{ fontWeight: 600, color: '#3b82f6' }}>{getCumulativeCount(item.name)}회</td>
                     <td>
                       <button 
                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
@@ -204,7 +287,8 @@ export default function Admin() {
                       </button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
