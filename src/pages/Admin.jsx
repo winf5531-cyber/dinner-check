@@ -258,8 +258,14 @@ export default function Admin() {
 
   const handleClearAll = async () => {
     if (confirm('정말로 모든 데이터를 초기화하시겠습니까? (이 작업은 되돌릴 수 없습니다!)')) {
-      await clearAllData();
-      loadData();
+      const userInput = prompt('데이터 전체 초기화를 위해 비밀번호를 입력해주세요.\n(비밀번호가 틀리면 초기화되지 않습니다)');
+      if (userInput === 'Camgo!') {
+        await clearAllData();
+        loadData();
+        alert('모든 데이터가 성공적으로 초기화되었습니다.');
+      } else if (userInput !== null) {
+        alert('비밀번호가 일치하지 않습니다. 초기화가 취소되었습니다.');
+      }
     }
   };
 
