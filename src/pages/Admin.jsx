@@ -216,35 +216,52 @@ export default function Admin() {
   };
 
   const handleManualSubmit = async () => {
-    const day = manualDate.getDay();
-    if (day === 0 || day === 6) {
-      alert("선택한 날짜는 주말입니다. 평일을 선택해주세요.");
-      return;
-    }
+    try {
+      if (!manualDate) {
+        alert("날짜를 명확히 선택해주세요.");
+        return;
+      }
+      
+      const parsedDate = new Date(manualDate);
+      if (isNaN(parsedDate.getTime())) {
+        alert("유효하지 않은 날짜입니다.");
+        return;
+      }
 
-    const staff = STAFF_LIST.find(s => s.name === manualSearchQuery);
-    if (!staff) {
-      alert("입력하신 이름이 교직원 명단에 없습니다.");
-      return;
-    }
+      const day = parsedDate.getDay();
+      if (day === 0 || day === 6) {
+        alert("선택한 날짜는 주말입니다. 평일을 선택해주세요.");
+        return;
+      }
 
-    const dateStr = format(manualDate, 'yyyy-MM-dd');
-    const exists = data.find(d => d.name === staff.name && d.date === dateStr);
-    if (exists) {
-      alert("이미 해당 날짜에 기록이 존재합니다.");
-      return;
-    }
+      const inputName = manualSearchQuery.trim();
+      const staff = STAFF_LIST.find(s => s.name === inputName);
+      if (!staff) {
+        alert("입력하신 이름이 교직원 명단에 없습니다. 이름을 다시 확인해주세요.");
+        return;
+      }
 
-    const result = await saveCheckin(staff.name, dateStr);
-    if (!result) {
-      alert("데이터베이스 저장 요청 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
-      return;
+      const dateStr = format(parsedDate, 'yyyy-MM-dd');
+      const exists = data.find(d => d.name === staff.name && d.date === dateStr);
+      if (exists) {
+        alert("이미 해당 날짜에 기록이 존재합니다.");
+        return;
+      }
+
+      const result = await saveCheckin(staff.name, dateStr);
+      if (!result) {
+        alert("데이터베이스 저장 요청 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
+        return;
+      }
+      
+      setIsManualEntryOpen(false);
+      setManualSearchQuery('');
+      setManualDate(new Date());
+      loadData();
+    } catch (error) {
+      console.error(error);
+      alert("알 수 없는 오류가 발생했습니다: " + error.message);
     }
-    
-    setIsManualEntryOpen(false);
-    setManualSearchQuery('');
-    setManualDate(new Date());
-    loadData();
   };
 
   const handleClearAll = async () => {
