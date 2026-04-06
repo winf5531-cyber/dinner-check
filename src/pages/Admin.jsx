@@ -38,7 +38,7 @@ export default function Admin() {
       // Supabase Realtime (웹소켓) 기능 연결: 데이터베이스 변경 시 즉시 갱신
       const channel = supabase
         .channel('admin-checkins')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'checkins' }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
           loadData();
         })
         .subscribe();
@@ -51,20 +51,7 @@ export default function Admin() {
 
   const loadData = async () => {
     const raw = await getCheckins();
-    raw.sort((a, b) => {
-      const staffA = STAFF_LIST.find(s => s.name === a.name);
-      const staffB = STAFF_LIST.find(s => s.name === b.name);
-      const idA = staffA ? staffA.id : 999;
-      const idB = staffB ? staffB.id : 999;
-      
-      // 1순위: 순번 오름차순
-      if (idA !== idB) return idA - idB;
-
-      // 2순위: 날짜 내림차순 (최신 날짜가 위로)
-      if (a.date > b.date) return -1;
-      if (a.date < b.date) return 1;
-      return 0;
-    });
+    // 데이터는 렌더링 시 sortedData에서 자동 정렬되므로 여기서 중복으로 정렬할 필요가 없음
     setData(raw);
   };
 
