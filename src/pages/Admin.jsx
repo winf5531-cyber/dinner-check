@@ -263,6 +263,11 @@ export default function Admin() {
     window.print();
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('adminAuth');
+  };
+
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -350,8 +355,8 @@ export default function Admin() {
           <button className="btn primary" style={{ width: 'auto', backgroundColor: '#3b82f6', color: 'white' }} onClick={() => setIsManualEntryOpen(true)}>
             수동 데이터 입력
           </button>
-          <button className="btn ghost" style={{ width: 'auto' }} onClick={() => navigate('/')}>
-            뒤로
+          <button className="btn ghost" style={{ width: 'auto' }} onClick={handleLogout}>
+            로그아웃
           </button>
         </div>
       </div>
