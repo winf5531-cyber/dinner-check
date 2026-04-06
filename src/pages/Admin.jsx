@@ -118,7 +118,7 @@ export default function Admin() {
     worksheet.getColumn(lastColIndex).width = 8;
 
     let currentRowIdx = 3;
-    STAFF_LIST.forEach((staff) => {
+    STAFF_LIST.forEach((staff, index) => {
       const row = [staff.id, staff.role, staff.name];
       
       weekdays.forEach(d => {
@@ -137,9 +137,14 @@ export default function Admin() {
       row.push({ formula: `COUNTIF(D${currentRowIdx}:${endColLetter}${currentRowIdx}, "O")` });
       
       const newRow = worksheet.addRow(row);
+      
+      const isFifthRow = (index + 1) % 5 === 0;
+      const isLastRow = (index + 1) === STAFF_LIST.length;
+      const bottomStyle = (isFifthRow || isLastRow) ? 'medium' : 'thin';
+
       newRow.eachCell((cell, colNumber) => {
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = { top: { style:'thin' }, left: { style:'thin' }, bottom: { style:'thin' }, right: { style:'thin' } };
+        cell.border = { top: { style:'thin' }, left: { style:'thin' }, bottom: { style: bottomStyle }, right: { style:'thin' } };
         // 순번(1)과 직(2) 표시에만 연한 노란색
         if (colNumber === 1 || colNumber === 2) {
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9C4' } };
