@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
-import { Lock, Download, Trash2, ArrowLeft, Printer } from 'lucide-react';
+import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -20,6 +20,7 @@ export default function Admin() {
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [exportMonth, setExportMonth] = useState(new Date());
+  const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
@@ -275,6 +276,60 @@ export default function Admin() {
     window.print();
   };
 
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedData = [...displayedData].sort((a, b) => {
+    const staffA = getStaffInfo(a.name);
+    const staffB = getStaffInfo(b.name);
+    
+    let aValue, bValue;
+    switch (sortConfig.key) {
+      case 'id':
+        aValue = staffA.id === '-' ? 999 : parseInt(staffA.id, 10);
+        bValue = staffB.id === '-' ? 999 : parseInt(staffB.id, 10);
+        break;
+      case 'role':
+        aValue = staffA.role;
+        bValue = staffB.role;
+        break;
+      case 'name':
+        aValue = a.name;
+        bValue = b.name;
+        break;
+      case 'date':
+        aValue = a.date;
+        bValue = b.date;
+        break;
+      case 'timestamp':
+        aValue = a.timestamp;
+        bValue = b.timestamp;
+        break;
+      case 'cumulative':
+        aValue = getCumulativeCount(a.name);
+        bValue = getCumulativeCount(b.name);
+        break;
+      default:
+        aValue = a.timestamp;
+        bValue = b.timestamp;
+    }
+
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const renderSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) return <ArrowUpDown size={14} style={{ color: '#d1d5db', marginLeft: '4px' }} />;
+    if (sortConfig.direction === 'asc') return <ArrowUp size={14} style={{ color: '#3b82f6', marginLeft: '4px' }} />;
+    return <ArrowDown size={14} style={{ color: '#3b82f6', marginLeft: '4px' }} />;
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto', textAlign: 'center' }}>
@@ -353,31 +408,44 @@ export default function Admin() {
                 <th style={{ width: '40px', textAlign: 'center' }}>
                   <input 
                     type="checkbox" 
-                    checked={displayedData.length > 0 && selectedIds.length === displayedData.length}
+                    checked={sortedData.length > 0 && selectedIds.length === sortedData.length}
                     onChange={handleSelectAll}
                     style={{ cursor: 'pointer' }}
                   />
                 </th>
-                <th>순번</th>
-                <th>직위</th>
-                <th>이름</th>
-                <th>날짜</th>
-                <th>체크 시간</th>
-                <th>
-                  {viewMode === 'all' 
-                    ? "전체 누적 횟수" 
-                    : `${parseInt(selectedDate.substring(5, 7), 10)}월의 누적 횟수`}
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('id')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>순번 {renderSortIcon('id')}</span>
+                </th>
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('role')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>직위 {renderSortIcon('role')}</span>
+                </th>
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('name')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>이름 {renderSortIcon('name')}</span>
+                </th>
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('date')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>날짜 {renderSortIcon('date')}</span>
+                </th>
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('timestamp')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>체크 시간 {renderSortIcon('timestamp')}</span>
+                </th>
+                <th style={{ cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} onClick={() => handleSort('cumulative')}>
+                  <span style={{ display:'inline-flex', alignItems:'center' }}>
+                    {viewMode === 'all' 
+                      ? "전체 누적 횟수" 
+                      : `${parseInt(selectedDate.substring(5, 7), 10)}월의 누적 횟수`}
+                    {renderSortIcon('cumulative')}
+                  </span>
                 </th>
                 <th>관리</th>
               </tr>
             </thead>
             <tbody>
-              {displayedData.length === 0 ? (
+              {sortedData.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
                 </tr>
               ) : (
-                displayedData.map((item) => {
+                sortedData.map((item) => {
                   const staff = getStaffInfo(item.name);
                   return (
                   <tr key={item.id}>
