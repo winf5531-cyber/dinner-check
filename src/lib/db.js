@@ -91,7 +91,27 @@ export const getCheckins = async () => {
   return data;
 };
 
+export const checkDuplicateCheckin = async (name, date) => {
+  const { data, error } = await supabase
+    .from('checkins')
+    .select('id')
+    .eq('name', name)
+    .eq('date', date);
+  
+  if (error) {
+    console.error('Error checking duplicate:', error);
+    return false;
+  }
+  return data && data.length > 0;
+};
+
 export const saveCheckin = async (name, date) => {
+  // DB 자체적으로도 중복 저장 방어
+  const isDuplicate = await checkDuplicateCheckin(name, date);
+  if (isDuplicate) {
+    return { duplicate: true }; // 중복 객체 반환
+  }
+
   const { data, error } = await supabase
     .from('checkins')
     .insert([{ name, date }])

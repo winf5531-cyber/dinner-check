@@ -124,6 +124,15 @@ export default function Home() {
       setIsSubmitting(false);
       return;
     }
+    
+    // 이미 오늘 수동 혹은 다른 기기로 체크한 경우
+    if (result.duplicate) {
+      alert(`선생님, 이미 오늘(${format(new Date(), 'M월 d일')}) 출석체크가 완료되어 있습니다!`);
+      localStorage.setItem('my_name', name.trim());
+      setHasCheckedIn(true);
+      setIsSubmitting(false);
+      return;
+    }
 
     localStorage.setItem('my_name', name.trim());
     setHasCheckedIn(true);

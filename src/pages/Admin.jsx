@@ -241,6 +241,10 @@ export default function Admin() {
         alert("데이터베이스 저장 요청 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         return;
       }
+      if (result.duplicate) {
+        alert("이미 해당 날짜에 데이터베이스에 기록이 존재합니다.");
+        return;
+      }
       
       setIsManualEntryOpen(false);
       setManualSearchQuery('');
