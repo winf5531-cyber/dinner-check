@@ -19,6 +19,7 @@ export default function Admin() {
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [exportMonth, setExportMonth] = useState(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,9 +74,8 @@ export default function Admin() {
   };
 
   const handleExport = async () => {
-    const targetDate = new Date(selectedDate);
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth(); // 0-based
+    const year = exportMonth.getFullYear();
+    const month = exportMonth.getMonth(); // 0-based
 
     // 평일 계산
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -136,9 +136,13 @@ export default function Admin() {
       row.push(cumulative);
       
       const newRow = worksheet.addRow(row);
-      newRow.eachCell((cell) => {
+      newRow.eachCell((cell, colNumber) => {
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = { top: { style:'thin' }, left: { style:'thin' }, bottom: { style:'thin' }, right: { style:'thin' } };
+        // 순번(1)과 직(2) 표시에만 연한 노란색
+        if (colNumber === 1 || colNumber === 2) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9C4' } };
+        }
       });
     });
 
@@ -198,7 +202,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="animate-up" style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="animate-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ textAlign: 'left', margin: 0 }}>영양교사 대시보드</h1>
         <button className="btn ghost" style={{ width: 'auto' }} onClick={() => navigate('/')}>
@@ -208,9 +212,20 @@ export default function Admin() {
 
       <div className="glass-card no-print">
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <button className="btn success" onClick={handleExport} style={{ flex: 1 }}>
-            <Download size={18} /> 엑셀 다운로드
-          </button>
+          <div style={{ display: 'flex', flex: 2, gap: '0.5rem', alignItems: 'center', background: 'rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280', whiteSpace: 'nowrap' }}>출석부 월 선택:</span>
+            <DatePicker
+              selected={exportMonth}
+              onChange={(date) => setExportMonth(date)}
+              locale={ko}
+              dateFormat="yyyy년 MM월"
+              showMonthYearPicker
+              className="custom-datepicker"
+            />
+            <button className="btn success" onClick={handleExport} style={{ flex: 1, margin: 0 }}>
+              <Download size={18} /> 엑셀 다운로드
+            </button>
+          </div>
           <button className="btn ghost" onClick={handlePrintQR} style={{ flex: 1, border: '1px solid #d1d5db', backgroundColor: 'white' }}>
             <Printer size={18} /> QR코드 출력
           </button>

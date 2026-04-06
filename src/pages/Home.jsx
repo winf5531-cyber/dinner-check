@@ -103,7 +103,7 @@ export default function Home() {
 
   if (!isScanned) {
     return (
-      <div className="animate-up">
+      <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
         <div className="header">
           <Utensils size={40} color="#9ca3af" style={{ marginBottom: '10px' }} />
           <h1 style={{ color: '#374151' }}>출석 체크 대기 중</h1>
@@ -136,7 +136,7 @@ export default function Home() {
   }
 
   return (
-    <div className="animate-up">
+    <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
       <div className="header">
         <Utensils size={40} color="#3b82f6" style={{ marginBottom: '10px' }} />
         <h1>석식 체크</h1>
