@@ -115,6 +115,19 @@ export const removeCheckin = async (id) => {
   }
 };
 
+export const removeMultipleCheckins = async (ids) => {
+  if (!ids || ids.length === 0) return;
+  const { error } = await supabase
+    .from('checkins')
+    .delete()
+    .in('id', ids);
+    
+  if (error) {
+    console.error('Error removing multiple checkins:', error);
+    throw error;
+  }
+};
+
 export const removeCheckinByNameAndDate = async (name, date) => {
   const { error } = await supabase
     .from('checkins')
@@ -131,7 +144,7 @@ export const clearAllData = async () => {
   const { error } = await supabase
     .from('checkins')
     .delete()
-    .neq('name', 'impossible_name_value'); 
+    .neq('id', -999); // 모든 데이터를 안전하게 지우기 위한 더미 필터
     
   if (error) {
     console.error('Error clearing data:', error);

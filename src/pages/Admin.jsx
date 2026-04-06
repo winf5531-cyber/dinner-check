@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, removeCheckin, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
+import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -189,7 +189,11 @@ export default function Admin() {
   const handleDeleteMultiple = async () => {
     if (selectedIds.length === 0) return;
     if (confirm(`${selectedIds.length}개의 데이터가 완전히 삭제되며 복구할 수 없습니다. 그래도 삭제하시겠습니까?`)) {
-      await Promise.all(selectedIds.map(id => removeCheckin(id)));
+      try {
+        await removeMultipleCheckins(selectedIds);
+      } catch (err) {
+        alert("데이터 삭제 중 오류가 발생했습니다.");
+      }
       setSelectedIds([]);
       loadData();
     }
@@ -231,7 +235,12 @@ export default function Admin() {
       return;
     }
 
-    await saveCheckin(staff.name, dateStr);
+    const result = await saveCheckin(staff.name, dateStr);
+    if (!result) {
+      alert("데이터베이스 저장 요청 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
+      return;
+    }
+    
     setIsManualEntryOpen(false);
     setManualSearchQuery('');
     setManualDate(new Date());
