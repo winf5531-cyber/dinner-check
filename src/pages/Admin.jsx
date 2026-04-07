@@ -266,7 +266,7 @@ export default function Admin() {
   }, [data, viewMode, selectedDate]);
 
   const getStaffInfo = (name) => {
-    return STAFF_MAP[name] || { role: '-', id: '-' };
+    return STAFF_MAP[name] || { role: '-', seq_num: '-', id: '-' };
   };
 
   const handleDelete = async (id) => {
