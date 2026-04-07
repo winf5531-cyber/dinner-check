@@ -79,8 +79,8 @@ export default function Home() {
       setShowDropdown(false);
       return;
     }
-    // 입력한 이름(공백 제거됨)으로 시작하는 명단 필터링
-    const matches = STAFF_LIST.filter(t => t.name.startsWith(val) && t.name !== val);
+    // 입력한 이름(공백 제거됨)을 포함하는 명단 필터링 (논리 모순 제거: 관리자 페이지의 includes 와 검색 알고리즘 통일)
+    const matches = STAFF_LIST.filter(t => t.name.includes(val) && t.name !== val);
     setFilteredNames(matches);
     setShowDropdown(matches.length > 0);
   };
