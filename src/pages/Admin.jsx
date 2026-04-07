@@ -633,7 +633,7 @@ export default function Admin() {
 
         <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.95rem', color: '#4b5563', fontWeight: 500, paddingLeft: '0.5rem' }}>
-            <span style={{ color: '#3b82f6', fontWeight: 700 }}>{sortedData.length}</span>개의 데이터가 있습니다.
+            총 <span style={{ color: '#3b82f6', fontWeight: 700 }}>{sortedData.length}</span>개의 데이터가 있습니다.
           </div>
           <button 
             className="btn danger" 
@@ -678,7 +678,7 @@ export default function Admin() {
       </div>
       
       {/* 마스터 컨트롤 패널: 명단 수정 / 전체 초기화 버튼 좌우 분리 배치 */}
-      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', padding: '1rem', background: '#f3f4f6', borderRadius: '12px' }}>
+      <div className="glass-card no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem' }}>
         <button 
           className="btn primary" 
           onClick={() => setIsStaffEditorOpen(true)} 
