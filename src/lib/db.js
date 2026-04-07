@@ -1,87 +1,56 @@
 import { supabase } from './supabase';
 
-export const STAFF_LIST = [
-  { id: 1, role: '교장', name: '이정세' },
-  { id: 2, role: '교감', name: '김혜옥' },
-  { id: 3, role: '교사', name: '윤소영' },
-  { id: 4, role: '교사', name: '이재성' },
-  { id: 5, role: '교사', name: '이다솜' },
-  { id: 6, role: '교사', name: '남신애' },
-  { id: 7, role: '교사', name: '정권택' },
-  { id: 8, role: '교사', name: '노주연' },
-  { id: 9, role: '교사', name: '이제현' },
-  { id: 10, role: '교사', name: '정윤혁' },
-  { id: 11, role: '교사', name: '조윤경' },
-  { id: 12, role: '교무실무사', name: '양태모' },
-  { id: 13, role: '교무실무사', name: '양은석' },
-  { id: 14, role: '교사', name: '이경수' },
-  { id: 15, role: '교사', name: '주승현' },
-  { id: 16, role: '교사', name: '정진성' },
-  { id: 17, role: '교사', name: '김응찬' },
-  { id: 18, role: '교사', name: '송경하' },
-  { id: 19, role: '교사', name: '박민아' },
-  { id: 20, role: '교사', name: '최유빈' },
-  { id: 21, role: '교사', name: '하지선' },
-  { id: 22, role: '교사', name: '신태환' },
-  { id: 23, role: '교사', name: '조미경' },
-  { id: 24, role: '교사', name: '이소희' },
-  { id: 25, role: '교사', name: '홍인선' },
-  { id: 26, role: '보건교사', name: '박은옥' },
-  { id: 27, role: '상담교사', name: '김가람' },
-  { id: 28, role: '특수교사', name: '김한비' },
-  { id: 29, role: '교사', name: '문동민' },
-  { id: 30, role: '교사', name: '신혜서' },
-  { id: 31, role: '교사', name: '박주영' },
-  { id: 32, role: '교사', name: '윤혜인' },
-  { id: 33, role: '교사', name: '진후정' },
-  { id: 34, role: '교사', name: '김준무' },
-  { id: 35, role: '교사', name: '안유정' },
-  { id: 36, role: '교사', name: '이나래' },
-  { id: 37, role: '교사', name: '김정민' },
-  { id: 38, role: '교사', name: '정아름' },
-  { id: 39, role: '교사', name: '박시연' },
-  { id: 40, role: '교사', name: '전예빈' },
-  { id: 41, role: '교사', name: '김연하' },
-  { id: 44, role: '교사', name: '이정숙' },
-  { id: 45, role: '교사', name: '임승우' },
-  { id: 46, role: '교사', name: '김영은' },
-  { id: 47, role: '교사', name: '안미진' },
-  { id: 48, role: '교사', name: '김광연' },
-  { id: 49, role: '교사', name: '권승준' },
-  { id: 50, role: '교사', name: '신수정' },
-  { id: 51, role: '교사', name: '김소연' },
-  { id: 52, role: '교사', name: '조용범' },
-  { id: 53, role: '교사', name: '최찬수' },
-  { id: 54, role: '교사', name: '이정우' },
-  { id: 55, role: '교사', name: '노남주' },
-  { id: 56, role: '교사', name: '송소진' },
-  { id: 57, role: '교사', name: '이예림' },
-  { id: 58, role: '교사', name: '이희경' },
-  { id: 59, role: '교사', name: '박지흠' },
-  { id: 60, role: '교사', name: '이창현' },
-  { id: 61, role: '행정실장', name: '나진이' },
-  { id: 62, role: '행정부장', name: '유향숙' },
-  { id: 63, role: '행정계장', name: '한승민' },
-  { id: 64, role: '주무관', name: '유한석' },
-  { id: 65, role: '주무관', name: '노지예' },
-  { id: 66, role: '당직원', name: '김주배' },
-  { id: 67, role: '온세종', name: '양희진' },
-  { id: 68, role: '온세종', name: '신현숙' },
-  { id: 69, role: '온세종', name: '고준' },
-  { id: 70, role: '온세종', name: '이대훈' },
-  { id: 71, role: '온세종', name: '박정호' },
-  { id: 72, role: '온세종', name: '김지현' },
-  { id: 73, role: '온세종', name: '하승주' },
-  { id: 74, role: '온세종', name: '김혜영' },
-  { id: 75, role: '온세종', name: '김혜원' },
-  { id: 76, role: '온세종', name: '오다훈' },
-  { id: 77, role: '온세종', name: '박진숙' }
-];
+export let STAFF_LIST = [];
+export let STAFF_MAP = {};
 
-export const STAFF_MAP = STAFF_LIST.reduce((acc, staff) => {
-  acc[staff.name] = staff;
-  return acc;
-}, {});
+export const fetchStaffList = async () => {
+  const { data, error } = await supabase
+    .from('staffs')
+    .select('*')
+    .order('seq_num', { ascending: true });
+    
+  if (error) {
+    console.error('Error fetching staffs:', error);
+    return false;
+  }
+  
+  if (data) {
+    STAFF_LIST = data;
+    
+    STAFF_MAP = STAFF_LIST.reduce((acc, staff) => {
+      acc[staff.name] = staff;
+      return acc;
+    }, {});
+    
+    return true;
+  }
+  return false;
+};
+
+export const saveStaffList = async (newList) => {
+  try {
+    // 1. 전체 삭제 (이름 기반 외래키 없는 구조라 안전하게 전체 덮어쓰기 가능)
+    const { error: deleteError } = await supabase.from('staffs').delete().not('id', 'is', null);
+    if (deleteError) throw deleteError;
+    
+    // 2. 신규 목록 삽입
+    const inserts = newList.map(s => ({
+      seq_num: parseInt(s.seq_num, 10),
+      role: s.role,
+      name: s.name
+    }));
+    
+    const { error: insertError } = await supabase.from('staffs').insert(inserts);
+    if (insertError) throw insertError;
+    
+    // 3. 로컬 캐시 동기화
+    await fetchStaffList();
+    return { success: true };
+  } catch (err) {
+    console.error('Error saving staff list:', err);
+    return { success: false, error: err };
+  }
+};
 
 export const getCheckins = async () => {
   const { data, error } = await supabase

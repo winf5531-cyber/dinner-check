@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, getCheckinsByMonth, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin } from '../lib/db';
+import { getCheckins, getCheckinsByMonth, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin, saveStaffList } from '../lib/db';
 import { format } from 'date-fns';
-import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown, Users, Plus, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -31,6 +31,55 @@ export default function Admin() {
   const [manualSearchQuery, setManualSearchQuery] = useState('');
   const [showManualDropdown, setShowManualDropdown] = useState(false);
   const manualFilteredStaff = manualSearchQuery.trim() === '' ? [] : STAFF_LIST.filter(s => s.name.includes(manualSearchQuery) && s.name !== manualSearchQuery.trim());
+
+  // 명단 에디터(Staff Editor) 관련 상태
+  const [isStaffEditorOpen, setIsStaffEditorOpen] = useState(false);
+  const [editingStaffs, setEditingStaffs] = useState([]);
+
+  useEffect(() => {
+    if (isStaffEditorOpen) {
+      // 컴포넌트 마운트/팝업 로드 시 원본 데이터를 깊은 복사하여 에디터 스테이트에 부여
+      setEditingStaffs(JSON.parse(JSON.stringify(STAFF_LIST)));
+    }
+  }, [isStaffEditorOpen]);
+
+  const handleStaffChange = (index, field, value) => {
+    const newData = [...editingStaffs];
+    newData[index][field] = value;
+    setEditingStaffs(newData);
+  };
+
+  const handleAddStaff = () => {
+    const maxSeq = editingStaffs.reduce((max, s) => Math.max(max, parseInt(s.seq_num || 0, 10)), 0);
+    setEditingStaffs([...editingStaffs, { seq_num: maxSeq + 1, role: '기타', name: '' }]);
+  };
+
+  const handleRemoveStaff = (index) => {
+    const newData = [...editingStaffs];
+    newData.splice(index, 1);
+    setEditingStaffs(newData);
+  };
+  
+  const handleAutoRenumber = () => {
+    const newData = editingStaffs.map((s, idx) => ({ ...s, seq_num: idx + 1 }));
+    setEditingStaffs(newData);
+  };
+
+  const handleSaveStaffs = async () => {
+    if (!window.confirm("주의! 수정한 명단을 DB에 영구적으로 반영하시겠습니까?\n(저장 이후에는 되돌릴 수 없으며 앱 전역 데이터 구조가 변경됩니다.)")) return;
+    
+    // 유효하지 않은 공백 데이터 필터링
+    const validStaffs = editingStaffs.filter(s => s.name.trim() !== '' && s.role.trim() !== '');
+    
+    // Loading State 처리 우회 대신 명시적인 알림 사용
+    const result = await saveStaffList(validStaffs);
+    if (result.success) {
+      alert("데이터 동기화 완료! 시스템을 안전하게 재시작합니다.");
+      window.location.reload(); 
+    } else {
+      alert("오류가 발생했습니다: " + (result.error?.message || '알 수 없는 오류'));
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -228,6 +277,7 @@ export default function Admin() {
       try {
         await removeMultipleCheckins(selectedIds);
       } catch (err) {
+        console.error('Delete error:', err);
         alert("데이터 삭제 중 오류가 발생했습니다.");
       }
       setSelectedIds([]);
@@ -620,11 +670,22 @@ export default function Admin() {
         </div>
       </div>
       
-      <div className="no-print" style={{ textAlign: 'right', marginTop: '1rem' }}>
+      </div>
+      
+      {/* 마스터 컨트롤 패널: 명단 수정 / 전체 초기화 버튼 좌우 분리 배치 */}
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', padding: '1rem', background: '#f3f4f6', borderRadius: '12px' }}>
+        <button 
+          className="btn primary" 
+          onClick={() => setIsStaffEditorOpen(true)} 
+          style={{ width: 'auto', padding: '0.75rem 1.5rem', backgroundColor: '#3b82f6', color: 'white', margin: 0 }}
+        >
+          <Users size={18} style={{ marginRight: '0.5rem', display: 'inline' }} /> 명단 수정 (전입/전출 등)
+        </button>
+
         <button 
           className="btn danger" 
           onClick={handleClearAll} 
-          style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fca5a5', boxShadow: 'none' }}
+          style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fca5a5', boxShadow: 'none', margin: 0 }}
         >
           데이터 전체 초기화
         </button>
@@ -640,7 +701,103 @@ export default function Admin() {
         </center>
       </div>
 
-      </div>
+      {/* 명단 수정 에디터 모달 (Staff Editor Modal) */}
+      {isStaffEditorOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div className="glass-card animate-up" style={{ width: '95%', maxWidth: '600px', maxHeight: '90vh', backgroundColor: '#fff', padding: '0', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Header */}
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb' }}>
+              <h2 style={{ margin: 0, color: '#111827', fontSize: '1.4rem' }}><Users size={24} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px', color: '#3b82f6'}} />명단 수정 박스</h2>
+              <button 
+                onClick={() => setIsStaffEditorOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            {/* Toolbar */}
+            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem', background: '#fff' }}>
+              <button className="btn success" onClick={handleAddStaff} style={{ width: 'auto', padding: '0.5rem 1rem', margin: 0, fontSize: '0.9rem' }}>
+                <Plus size={16} /> 행 1개 추가
+              </button>
+              <button className="btn ghost" onClick={handleAutoRenumber} style={{ width: 'auto', padding: '0.5rem 1rem', margin: 0, fontSize: '0.9rem', border: '1px solid #d1d5db' }}>
+                순번 자동 정렬 (1번부터)
+              </button>
+            </div>
+
+            {/* List Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0', background: '#f3f4f6' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ position: 'sticky', top: 0, background: '#e5e7eb', zIndex: 1 }}>
+                  <tr>
+                    <th style={{ width: '15%', padding: '0.75rem', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>순번</th>
+                    <th style={{ width: '25%', padding: '0.75rem', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>직위</th>
+                    <th style={{ width: '45%', padding: '0.75rem', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>성명</th>
+                    <th style={{ width: '15%', padding: '0.75rem', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>삭제</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {editingStaffs.map((s, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+                      <td style={{ padding: '0.5rem' }}>
+                        <input 
+                          type="number" 
+                          value={s.seq_num} 
+                          onChange={(e) => handleStaffChange(index, 'seq_num', e.target.value)}
+                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}
+                        />
+                      </td>
+                      <td style={{ padding: '0.5rem' }}>
+                        <input 
+                          type="text" 
+                          value={s.role} 
+                          onChange={(e) => handleStaffChange(index, 'role', e.target.value)}
+                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}
+                        />
+                      </td>
+                      <td style={{ padding: '0.5rem' }}>
+                        <input 
+                          type="text" 
+                          value={s.name} 
+                          onChange={(e) => handleStaffChange(index, 'name', e.target.value)}
+                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #3b82f6', borderRadius: '6px', fontWeight: 'bold' }}
+                        />
+                      </td>
+                      <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                        <button 
+                          onClick={() => handleRemoveStaff(index)}
+                          style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '6px' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {editingStaffs.length === 0 && (
+                     <tr><td colSpan="4" style={{ textAlign:'center', padding:'2rem', color:'#6b7280' }}>명단이 완전히 비었습니다!</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '1.5rem', borderTop: '1px solid #e5e7eb', display: 'flex', background: '#f9fafb' }}>
+              <button 
+                className="btn primary" 
+                onClick={handleSaveStaffs} 
+                style={{ flex: 1, margin: 0, padding: '1rem', backgroundColor: '#ea580c', color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}
+              >
+                <Save size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }} /> 최종 DB 영구 저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isManualEntryOpen && (
         <div style={{
