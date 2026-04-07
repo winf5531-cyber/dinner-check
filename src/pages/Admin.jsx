@@ -599,7 +599,7 @@ export default function Admin() {
                   setManualSearchQuery(e.target.value.replace(/\s+/g, ''));
                   setShowManualDropdown(true);
                 }}
-                onBlur={() => setTimeout(() => setShowManualDropdown(false), 200)}
+                onBlur={() => setShowManualDropdown(false)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #d1d5db', boxSizing: 'border-box', fontSize: '1rem', outline: 'none' }}
               />
               
