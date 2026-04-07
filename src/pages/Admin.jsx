@@ -37,6 +37,7 @@ export default function Admin() {
   const [editingStaffs, setEditingStaffs] = useState([]);
   const [draggedRowIndex, setDraggedRowIndex] = useState(null);
   const [dragTargetIndex, setDragTargetIndex] = useState(null);
+  const [dragOverPosition, setDragOverPosition] = useState(null);
 
   useEffect(() => {
     if (isStaffEditorOpen) {
@@ -85,16 +86,31 @@ export default function Admin() {
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    if (dragTargetIndex !== index) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const position = y < rect.height / 2 ? 'top' : 'bottom';
+    
+    if (dragTargetIndex !== index || dragOverPosition !== position) {
       setDragTargetIndex(index);
+      setDragOverPosition(position);
     }
   };
 
-  const handleDrop = (e, dropIndex) => {
+  const handleDrop = (e, targetIndex) => {
     e.preventDefault();
-    if (draggedRowIndex === null || draggedRowIndex === dropIndex) {
+    if (draggedRowIndex === null) return;
+    
+    let dropIndex = dragOverPosition === 'bottom' ? targetIndex + 1 : targetIndex;
+    
+    // 배열에서 뽑아내어 재배치할 때 인덱스 밀림 보정
+    if (draggedRowIndex < dropIndex) {
+      dropIndex--; // 위에서 아래로 내릴 경우, 원본이 빠져나간 자리를 채우므로 목표 인덱스 1 감소
+    }
+    
+    if (draggedRowIndex === dropIndex) {
       setDraggedRowIndex(null);
       setDragTargetIndex(null);
+      setDragOverPosition(null);
       return;
     }
     const newData = [...editingStaffs];
@@ -103,11 +119,13 @@ export default function Admin() {
     setEditingStaffs(newData);
     setDraggedRowIndex(null);
     setDragTargetIndex(null);
+    setDragOverPosition(null);
   };
 
   const handleDragEnd = () => {
     setDraggedRowIndex(null);
     setDragTargetIndex(null);
+    setDragOverPosition(null);
   };
 
   const handleSaveStaffs = async () => {
@@ -795,8 +813,9 @@ export default function Admin() {
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
                       style={{ 
-                        borderBottom: '1px solid #e5e7eb', 
-                        background: dragTargetIndex === index ? '#e0f2fe' : (draggedRowIndex === index ? '#f9fafb' : '#fff'),
+                        borderBottom: dragTargetIndex === index && dragOverPosition === 'bottom' ? '3px solid #3b82f6' : '1px solid #e5e7eb',
+                        borderTop: dragTargetIndex === index && dragOverPosition === 'top' ? '3px solid #3b82f6' : 'none',
+                        background: draggedRowIndex === index ? '#f9fafb' : '#fff',
                         opacity: draggedRowIndex === index ? 0.4 : 1,
                         cursor: 'grab',
                         transition: 'background-color 0.2s',
