@@ -176,7 +176,6 @@ export default function Home() {
   const handleFinalCancelCheckin = async () => {
     if (isSubmitting || submitLock.current) return;
 
-    setShowCancelModal(false);
     submitLock.current = true;
     setIsSubmitting(true);
     const currentToday = format(new Date(), 'yyyy-MM-dd');
@@ -189,6 +188,8 @@ export default function Home() {
       setIsSubmitting(false);
       return;
     }
+    // 데이터베이스 완전 삭제 확인 후 안전하게 UI 전환 (비동기 상태 시차 극복)
+    setShowCancelModal(false);
     setHasCheckedIn(false);
     submitLock.current = false;
     setIsSubmitting(false);
@@ -302,10 +303,10 @@ export default function Home() {
               <button 
                 className="btn" 
                 disabled={isSubmitting || submitLock.current}
-                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem' }} 
+                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem', opacity: isSubmitting ? 0.7 : 1 }} 
                 onClick={handleFinalCancelCheckin}
               >
-                예
+                {isSubmitting ? '취소 처리 중...' : '예'}
               </button>
               <button 
                 className="btn ghost" 
