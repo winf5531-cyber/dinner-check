@@ -754,7 +754,7 @@ export default function Admin() {
                           type="number" 
                           value={s.seq_num} 
                           onChange={(e) => handleStaffChange(index, 'seq_num', e.target.value)}
-                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '0.35rem', margin: 0, textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
                         />
                       </td>
                       <td style={{ padding: '0.25rem 0.5rem' }}>
@@ -762,7 +762,7 @@ export default function Admin() {
                           type="text" 
                           value={s.role} 
                           onChange={(e) => handleStaffChange(index, 'role', e.target.value)}
-                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '0.35rem', margin: 0, textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
                         />
                       </td>
                       <td style={{ padding: '0.25rem 0.5rem' }}>
@@ -770,7 +770,7 @@ export default function Admin() {
                           type="text" 
                           value={s.name} 
                           onChange={(e) => handleStaffChange(index, 'name', e.target.value)}
-                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #3b82f6', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '0.35rem', margin: 0, textAlign: 'center', border: '1px solid #3b82f6', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem' }}
                         />
                       </td>
                       <td style={{ padding: '0.25rem 0.5rem', textAlign: 'center' }}>
