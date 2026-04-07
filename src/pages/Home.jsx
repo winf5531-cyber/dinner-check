@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Utensils } from 'lucide-react';
+import { Utensils, CheckCircle } from 'lucide-react';
 import { saveCheckin, checkDuplicateCheckin, removeCheckinByNameAndDate, STAFF_LIST } from '../lib/db';
 
 // InstallPrompt 기능 및 버튼 삭제됨 (QR 매일 스캔 정책과 충돌)
