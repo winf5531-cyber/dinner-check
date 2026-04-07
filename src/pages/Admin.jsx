@@ -612,12 +612,12 @@ export default function Admin() {
                   {manualFilteredStaff.map(s => (
                     <div 
                       key={s.id} 
+                      className="dropdown-item"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setManualSearchQuery(s.name);
                         setShowManualDropdown(false);
                       }}
-                      style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f3f4f6' }}
                     >
                       <span style={{ color: '#6b7280', fontSize: '0.85rem', marginRight: '8px' }}>{s.role}</span>
                       <span style={{ fontWeight: 500, color: '#111827' }}>{s.name}</span>

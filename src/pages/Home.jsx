@@ -173,11 +173,6 @@ export default function Home() {
     setShowCancelModal(false);
   };
 
-  // 첫 번째 경고창(모달)에서 '예'를 누른 경우 바로 삭제 진행 (1단계로 단일화)
-  const confirmCancelCheckin = () => {
-    handleFinalCancelCheckin();
-  };
-
   const handleFinalCancelCheckin = async () => {
     if (isSubmitting || submitLock.current) return;
 
@@ -307,7 +302,7 @@ export default function Home() {
                 className="btn" 
                 disabled={isSubmitting || submitLock.current}
                 style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem' }} 
-                onClick={confirmCancelCheckin}
+                onClick={handleFinalCancelCheckin}
               >
                 예
               </button>
