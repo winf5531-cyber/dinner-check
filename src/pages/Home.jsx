@@ -147,13 +147,9 @@ export default function Home() {
     setShowCancelModal(false);
   };
 
-  // 첫 번째 경고창(모달)에서 '예'를 누른 경우, 네이티브 확인창 한 번 더 실행
+  // 첫 번째 경고창(모달)에서 '예'를 누른 경우 바로 삭제 진행 (1단계로 단일화)
   const confirmCancelCheckin = () => {
-    if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
-      handleFinalCancelCheckin();
-    } else {
-      setShowCancelModal(false);
-    }
+    handleFinalCancelCheckin();
   };
 
   const handleFinalCancelCheckin = async () => {
