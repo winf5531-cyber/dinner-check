@@ -35,9 +35,9 @@ export const saveStaffList = async (newList) => {
     
     // 2. 신규 목록 삽입
     const inserts = newList.map(s => ({
-      seq_num: parseInt(s.seq_num, 10),
-      role: s.role,
-      name: s.name
+      seq_num: parseInt(s.seq_num || 0, 10) || 0, // 빈 칸 방어
+      role: s.role || '미지정', // 빈 직위 방어
+      name: s.name || '이름없음' // 빈 이름 방어
     }));
     
     const { error: insertError } = await supabase.from('staffs').insert(inserts);
