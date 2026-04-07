@@ -87,6 +87,7 @@ export default function Home() {
 
   const handleSelectName = (tName) => {
     setName(tName);
+    setFilteredNames([]); // 논리 모순 제거: 선택 완료된 풀네임이 재포커스 시 불필요하게 다시 뜨는 현상 방지
     setShowDropdown(false);
   };
 
