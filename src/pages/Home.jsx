@@ -83,14 +83,14 @@ export default function Home() {
 
 
   const handleNameChange = (e) => {
-    const val = e.target.value;
+    const val = e.target.value.replace(/\s+/g, '');
     setName(val);
-    if (!val.trim()) {
+    if (!val) {
       setShowDropdown(false);
       return;
     }
-    // 중간에 포함된 이름이 아닌, 입력한 글자로 '시작'하는 이름만 필터링
-    const matches = STAFF_LIST.filter(t => t.name.startsWith(val.trim()) && t.name !== val.trim());
+    // 입력한 이름(공백 제거됨)으로 시작하는 명단 필터링
+    const matches = STAFF_LIST.filter(t => t.name.startsWith(val) && t.name !== val);
     setFilteredNames(matches);
     setShowDropdown(matches.length > 0);
   };
@@ -103,14 +103,14 @@ export default function Home() {
   const handleCheckin = async () => {
     if (isSubmitting) return;
 
-    const trimmedName = name.trim();
-    if (!trimmedName) {
+    const cleanName = name.replace(/\s+/g, '');
+    if (!cleanName) {
       alert('성함을 입력해주세요!');
       return;
     }
 
-    // 명단에 등록된 이름인지 최종 확인 (외부인 입력 방지)
-    const isStaff = STAFF_LIST.some(staff => staff.name === trimmedName);
+    // 공백이 완전히 제거된 깨끗한 이름이 명단에 있는지 확인
+    const isStaff = STAFF_LIST.some(staff => staff.name === cleanName);
     if (!isStaff) {
       alert('교직원 명단에 없습니다. 영양 선생님에게 문의해 주세요.');
       return;
@@ -125,7 +125,7 @@ export default function Home() {
     setIsSubmitting(true);
 
     // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
-    const result = await saveCheckin(trimmedName, today);
+    const result = await saveCheckin(cleanName, today);
     if (!result) {
       alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
       setIsSubmitting(false);
@@ -135,13 +135,13 @@ export default function Home() {
     // 이미 오늘 수동 혹은 다른 기기로 체크한 경우
     if (result.duplicate) {
       alert(`선생님, 이미 오늘(${format(new Date(), 'M월 d일')}) 출석체크가 완료되어 있습니다!`);
-      localStorage.setItem('my_name', trimmedName);
+      localStorage.setItem('my_name', cleanName);
       setHasCheckedIn(true);
       setIsSubmitting(false);
       return;
     }
 
-    localStorage.setItem('my_name', trimmedName);
+    localStorage.setItem('my_name', cleanName);
     setHasCheckedIn(true);
     setAnimate(true);
     
@@ -154,9 +154,10 @@ export default function Home() {
   const handleCancelCheckin = async () => {
     if (isSubmitting) return;
 
+    const cleanName = name.replace(/\s+/g, '');
     if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
       setIsSubmitting(true);
-      const success = await removeCheckinByNameAndDate(name.trim(), today);
+      const success = await removeCheckinByNameAndDate(cleanName, today);
       if (!success) {
         alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
         setIsSubmitting(false);

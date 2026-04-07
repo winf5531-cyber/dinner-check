@@ -222,7 +222,7 @@ export default function Admin() {
         return;
       }
 
-      const inputName = manualSearchQuery.trim();
+      const inputName = manualSearchQuery.replace(/\s+/g, '');
       const staff = STAFF_LIST.find(s => s.name === inputName);
       if (!staff) {
         alert("입력하신 이름이 교직원 명단에 없습니다. 이름을 다시 확인해주세요.");
@@ -568,7 +568,7 @@ export default function Admin() {
                 value={manualSearchQuery}
                 onFocus={() => setShowManualDropdown(true)}
                 onChange={(e) => {
-                  setManualSearchQuery(e.target.value);
+                  setManualSearchQuery(e.target.value.replace(/\s+/g, ''));
                   setShowManualDropdown(true);
                 }}
                 onBlur={() => setTimeout(() => setShowManualDropdown(false), 200)}
