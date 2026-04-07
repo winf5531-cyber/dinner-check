@@ -673,27 +673,25 @@ export default function Admin() {
             <Printer size={18} /> QR코드 출력
           </button>
         </div>
-      </div>
-      
-      </div>
-      
-      {/* 마스터 컨트롤 패널: 명단 수정 / 전체 초기화 버튼 좌우 분리 배치 */}
-      <div className="glass-card no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem' }}>
-        <button 
-          className="btn primary" 
-          onClick={() => setIsStaffEditorOpen(true)} 
-          style={{ width: 'auto', padding: '0.75rem 1.5rem', backgroundColor: '#3b82f6', color: 'white', margin: 0 }}
-        >
-          <Users size={18} style={{ marginRight: '0.5rem', display: 'inline' }} /> 명단 수정 (전입/전출 등)
-        </button>
+          <div style={{ marginTop: '2rem', borderTop: '2px dashed #e5e7eb', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button 
+              className="btn primary" 
+              onClick={() => setIsStaffEditorOpen(true)} 
+              style={{ width: 'auto', padding: '0.75rem 1.5rem', backgroundColor: '#3b82f6', color: 'white', margin: 0 }}
+            >
+              <Users size={18} style={{ marginRight: '0.5rem', display: 'inline' }} /> 명단 수정 (전입/전출 등)
+            </button>
 
-        <button 
+            <button 
           className="btn danger" 
           onClick={handleClearAll} 
           style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#fff', color: '#ef4444', border: '1px solid #fca5a5', boxShadow: 'none', margin: 0 }}
         >
-          데이터 전체 초기화
-        </button>
+            데이터 전체 초기화
+          </button>
+        </div>
+      </div>
+      
       </div>
 
       <div className="print-only">
