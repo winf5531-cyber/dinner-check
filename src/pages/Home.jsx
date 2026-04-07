@@ -246,9 +246,9 @@ export default function Home() {
               />
               {showDropdown && (
                 <ul className="dropdown-list">
-                  {filteredNames.map((staff, idx) => (
+                  {filteredNames.map((staff) => (
                     <li 
-                      key={idx} 
+                      key={staff.id} 
                       className="dropdown-item"
                       onClick={() => handleSelectName(staff.name)}
                     >
