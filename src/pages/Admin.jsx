@@ -176,7 +176,7 @@ export default function Admin() {
   const handleDelete = async (id) => {
     if (confirm('이 기록을 삭제하시겠습니까?')) {
       await removeCheckin(id);
-      loadData();
+      // loadData(); // 실시간(Realtime) 리스너가 자동 감지하여 처리하므로 중복 호출 제거
     }
   };
 
@@ -189,7 +189,7 @@ export default function Admin() {
         alert("데이터 삭제 중 오류가 발생했습니다.");
       }
       setSelectedIds([]);
-      loadData();
+      // loadData(); // 실시간(Realtime) 리스너로 위임하여 이중 호출 방지
     }
   };
 
@@ -251,11 +251,10 @@ export default function Admin() {
         alert("이미 해당 날짜에 데이터베이스에 기록이 존재합니다.");
         return;
       }
-      
       setIsManualEntryOpen(false);
       setManualSearchQuery('');
       setManualDate(new Date());
-      loadData();
+      // loadData(); // 논리적 중복이므로 제거 (Realtime이 처리)
     } catch (error) {
       console.error(error);
       alert("알 수 없는 오류가 발생했습니다: " + error.message);
@@ -267,7 +266,7 @@ export default function Admin() {
       const userInput = prompt('데이터 전체 초기화를 위해 비밀번호를 입력해주세요.\n(비밀번호가 틀리면 초기화되지 않습니다)');
       if (userInput === 'Camgo!') {
         await clearAllData();
-        loadData();
+        // loadData(); // 실시간 동기화로 대체하여 중복 트랜잭션 제거
         alert('모든 데이터가 성공적으로 초기화되었습니다.');
       } else if (userInput !== null) {
         alert('비밀번호가 일치하지 않습니다. 초기화가 취소되었습니다.');
