@@ -52,6 +52,11 @@ export default function Admin() {
   const handleAddStaff = () => {
     const maxSeq = editingStaffs.reduce((max, s) => Math.max(max, parseInt(s.seq_num || 0, 10)), 0);
     setEditingStaffs([...editingStaffs, { seq_num: maxSeq + 1, role: '기타', name: '' }]);
+    // 추가된 행으로 스크롤 이동
+    setTimeout(() => {
+      const container = document.getElementById('staff-editor-list');
+      if (container) container.scrollTop = container.scrollHeight;
+    }, 100);
   };
 
   const handleRemoveStaff = (index) => {
@@ -726,12 +731,12 @@ export default function Admin() {
                 <Plus size={16} /> 행 1개 추가
               </button>
               <button className="btn ghost" onClick={handleAutoRenumber} style={{ width: 'auto', padding: '0.5rem 1rem', margin: 0, fontSize: '0.9rem', border: '1px solid #d1d5db' }}>
-                순번 자동 정렬 (1번부터)
+                순번 자동 입력 (1번부터)
               </button>
             </div>
 
             {/* List Body */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0', background: '#f3f4f6' }}>
+            <div id="staff-editor-list" style={{ flex: 1, overflowY: 'auto', padding: '0', background: '#f3f4f6' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead style={{ position: 'sticky', top: 0, background: '#e5e7eb', zIndex: 1 }}>
                   <tr>
@@ -744,34 +749,34 @@ export default function Admin() {
                 <tbody>
                   {editingStaffs.map((s, index) => (
                     <tr key={index} style={{ borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
-                      <td style={{ padding: '0.5rem' }}>
+                      <td style={{ padding: '0.25rem 0.5rem' }}>
                         <input 
                           type="number" 
                           value={s.seq_num} 
                           onChange={(e) => handleStaffChange(index, 'seq_num', e.target.value)}
-                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}
+                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
                         />
                       </td>
-                      <td style={{ padding: '0.5rem' }}>
+                      <td style={{ padding: '0.25rem 0.5rem' }}>
                         <input 
                           type="text" 
                           value={s.role} 
                           onChange={(e) => handleStaffChange(index, 'role', e.target.value)}
-                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}
+                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.9rem' }}
                         />
                       </td>
-                      <td style={{ padding: '0.5rem' }}>
+                      <td style={{ padding: '0.25rem 0.5rem' }}>
                         <input 
                           type="text" 
                           value={s.name} 
                           onChange={(e) => handleStaffChange(index, 'name', e.target.value)}
-                          style={{ width: '100%', padding: '0.5rem', textAlign: 'center', border: '1px solid #3b82f6', borderRadius: '6px', fontWeight: 'bold' }}
+                          style={{ width: '100%', padding: '0.35rem', textAlign: 'center', border: '1px solid #3b82f6', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.9rem' }}
                         />
                       </td>
-                      <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                      <td style={{ padding: '0.25rem 0.5rem', textAlign: 'center' }}>
                         <button 
                           onClick={() => handleRemoveStaff(index)}
-                          style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '6px' }}
+                          style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#ef4444', cursor: 'pointer', padding: '0.35rem', borderRadius: '4px' }}
                         >
                           <Trash2 size={16} />
                         </button>
