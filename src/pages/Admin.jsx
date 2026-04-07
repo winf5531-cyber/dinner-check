@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
@@ -26,7 +26,7 @@ export default function Admin() {
   const [manualDate, setManualDate] = useState(new Date());
   const [manualSearchQuery, setManualSearchQuery] = useState('');
   const [showManualDropdown, setShowManualDropdown] = useState(false);
-  const manualFilteredStaff = manualSearchQuery.trim() === '' ? [] : STAFF_LIST.filter(s => s.name.includes(manualSearchQuery));
+  const manualFilteredStaff = manualSearchQuery.trim() === '' ? [] : STAFF_LIST.filter(s => s.name.includes(manualSearchQuery) && s.name !== manualSearchQuery.trim());
 
   const navigate = useNavigate();
 
@@ -165,15 +165,23 @@ export default function Admin() {
     saveAs(new Blob([buffer]), `${year}년_${month + 1}월_석식체크.xlsx`);
   };
 
-  const getCumulativeCount = (name) => {
+  // 성능 모순 제거: O(N^2) 루프 폭탄을 방지하기 위해 렌더링 전 해시 맵으로 누적 횟수를 단일 패스(O(N)) 캐싱
+  const cumulativeCounts = useMemo(() => {
+    const counts = {};
     if (viewMode === 'all') {
-      return data.filter(d => d.name === name).length;
+      data.forEach(d => {
+        counts[d.name] = (counts[d.name] || 0) + 1;
+      });
     } else {
-      // 날짜별 보기 모드일 때는 선택된 달의 누적 횟수만 계산
-      const targetMonthPrefix = selectedDate.substring(0, 7); // 'yyyy-MM'
-      return data.filter(d => d.name === name && d.date.startsWith(targetMonthPrefix)).length;
+      const targetMonthPrefix = selectedDate.substring(0, 7);
+      data.forEach(d => {
+        if (d.date.startsWith(targetMonthPrefix)) {
+          counts[d.name] = (counts[d.name] || 0) + 1;
+        }
+      });
     }
-  };
+    return counts;
+  }, [data, viewMode, selectedDate]);
 
   const getStaffInfo = (name) => {
     return STAFF_LIST.find(s => s.name === name) || { role: '-', id: '-' };
@@ -477,7 +485,7 @@ export default function Admin() {
                     <td style={{ fontSize: '0.85rem', color: '#6b7280' }}>
                       {format(new Date(item.timestamp), 'HH:mm:ss')}
                     </td>
-                    <td style={{ fontWeight: 600, color: '#3b82f6' }}>{getCumulativeCount(item.name)}회</td>
+                    <td style={{ fontWeight: 600, color: '#3b82f6' }}>{cumulativeCounts[item.name] || 0}회</td>
                     <td>
                       <button 
                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
