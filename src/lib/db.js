@@ -82,7 +82,8 @@ export const getCheckins = async () => {
   const { data, error } = await supabase
     .from('checkins')
     .select('*')
-    .order('timestamp', { ascending: false });
+    .order('timestamp', { ascending: false })
+    .limit(10000);
   
   if (error) {
     console.error('Error fetching checkins:', error);
