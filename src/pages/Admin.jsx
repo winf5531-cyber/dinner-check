@@ -199,7 +199,7 @@ export default function Admin() {
 
     let currentRowIdx = 3;
     STAFF_LIST.forEach((staff, index) => {
-      const row = [staff.id, staff.role, staff.name];
+      const row = [staff.seq_num, staff.role, staff.name];
       
       weekdays.forEach(d => {
         const dateStr = format(d, 'yyyy-MM-dd');
@@ -392,8 +392,8 @@ export default function Admin() {
       let aValue, bValue;
       switch (sortConfig.key) {
         case 'id':
-          aValue = staffA.id === '-' ? 999 : parseInt(staffA.id, 10);
-          bValue = staffB.id === '-' ? 999 : parseInt(staffB.id, 10);
+          aValue = staffA.seq_num === '-' ? 999 : parseInt(staffA.seq_num, 10);
+          bValue = staffB.seq_num === '-' ? 999 : parseInt(staffB.seq_num, 10);
           break;
         case 'role':
           aValue = staffA.role;
@@ -577,7 +577,7 @@ export default function Admin() {
                         style={{ cursor: 'pointer' }}
                       />
                     </td>
-                    <td style={{ color: '#6b7280' }}>{staff.id}</td>
+                    <td style={{ color: '#6b7280' }}>{staff.seq_num || '-'}</td>
                     <td style={{ color: '#6b7280' }}>{staff.role}</td>
                     <td style={{ fontWeight: 600 }}>{item.name}</td>
                     <td><span className="badge green">{item.date}</span></td>
