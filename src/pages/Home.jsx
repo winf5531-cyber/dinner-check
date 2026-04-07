@@ -25,9 +25,8 @@ export default function Home() {
       if (document.visibilityState === 'visible') {
         const freshToday = format(new Date(), 'yyyy-MM-dd');
         if (freshToday !== today) {
-          setToday(freshToday);
-          setHasCheckedIn(false); // 날짜가 바뀌면 뷰어 리셋
-          window.location.reload(); // 가장 깔끔하게 처음부터 다시 로딩
+          // 상태 업데이트(setState)는 reload 시 전부 소멸하므로 생략 (논리적 낭비 제거)
+          window.location.reload();
         }
       }
     };
