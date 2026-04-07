@@ -35,15 +35,21 @@ export default function Admin() {
     if (isAuthenticated) {
       loadData();
       
+      let debounceTimer;
+
       // Supabase Realtime (웹소켓) 기능 연결: 데이터베이스 변경 시 즉시 갱신
       const channel = supabase
         .channel('admin-checkins')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
-          loadData();
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            loadData();
+          }, 500);
         })
         .subscribe();
         
       return () => {
+        clearTimeout(debounceTimer);
         supabase.removeChannel(channel);
       };
     }
