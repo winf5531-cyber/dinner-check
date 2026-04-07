@@ -34,21 +34,19 @@ export default function Admin() {
     if (isAuthenticated) {
       loadData();
       
-      let debounceTimer;
-
-      // Supabase Realtime (웹소켓) 기능 연결: 데이터베이스 변경 시 즉시 갱신
+      // Supabase Realtime (웹소켓) 기능 연결: 데이터베이스 변경 시 리소스를 낭비하지 않고 로컬 상태만 즉각 업데이트
       const channel = supabase
         .channel('admin-checkins')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            loadData();
-          }, 500);
+          if (payload.eventType === 'INSERT') {
+            setData(prev => [payload.new, ...prev]);
+          } else if (payload.eventType === 'DELETE') {
+            setData(prev => prev.filter(item => item.id !== payload.old.id));
+          }
         })
         .subscribe();
         
       return () => {
-        clearTimeout(debounceTimer);
         supabase.removeChannel(channel);
       };
     }
