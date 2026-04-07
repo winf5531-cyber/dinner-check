@@ -22,6 +22,7 @@ export default function Admin() {
   const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
   const [selectedIds, setSelectedIds] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [manualDate, setManualDate] = useState(new Date());
   const [exportMonth, setExportMonth] = useState(new Date()); // 누락된 상태 변수 복구
@@ -85,10 +86,14 @@ export default function Admin() {
   };
 
   const handleExport = async () => {
-    // 엑셀 다운로드는 전용 'exportMonth' 캘린더 값을 기준으로 출력
-    const targetDate = new Date(exportMonth);
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth(); // 0-based
+    if (isExporting) return;
+    setIsExporting(true);
+
+    try {
+      // 엑셀 다운로드는 전용 'exportMonth' 캘린더 값을 기준으로 출력
+      const targetDate = new Date(exportMonth);
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth(); // 0-based
 
     // 평일 계산
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -175,8 +180,14 @@ export default function Admin() {
       currentRowIdx++;
     });
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `${year}년_${month + 1}월_석식체크.xlsx`);
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), `${year}년_${month + 1}월_석식체크.xlsx`);
+    } catch (error) {
+      console.error('Excel Export Error:', error);
+      alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // 성능 모순 제거: O(N^2) 루프 폭탄을 방지하기 위해 렌더링 전 해시 맵으로 누적 횟수를 단일 패스(O(N)) 캐싱
@@ -559,8 +570,13 @@ export default function Admin() {
               showMonthYearPicker
               className="custom-datepicker"
             />
-            <button className="btn success" onClick={handleExport} style={{ flex: 1, margin: 0 }}>
-              <Download size={18} /> 엑셀 다운로드
+            <button 
+              className="btn success" 
+              onClick={handleExport} 
+              disabled={isExporting}
+              style={{ flex: 1, margin: 0, opacity: isExporting ? 0.7 : 1 }}
+            >
+              <Download size={18} /> {isExporting ? '처리 중...' : '엑셀 다운로드'}
             </button>
           </div>
           <button className="btn ghost" onClick={handlePrintQR} style={{ flex: 1, border: '1px solid #d1d5db', backgroundColor: 'white' }}>

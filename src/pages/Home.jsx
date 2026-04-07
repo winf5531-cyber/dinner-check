@@ -15,7 +15,7 @@ export default function Home() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [today, setToday] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [today] = useState(format(new Date(), 'yyyy-MM-dd'));
   const submitLock = useRef(false);
 
   const displayDate = format(new Date(), 'M월 d일 (EEEE)', { locale: ko });
@@ -259,7 +259,7 @@ export default function Home() {
                 </ul>
               )}
             </div>
-            <button className="btn" disabled={isSubmitting || submitLock.current} onClick={handleCheckin}>
+            <button className="btn" disabled={isSubmitting} onClick={handleCheckin}>
               <CheckCircle size={20} /> 출석 체크 완료
             </button>
           </>
@@ -302,7 +302,7 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
               <button 
                 className="btn" 
-                disabled={isSubmitting || submitLock.current}
+                disabled={isSubmitting}
                 style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem', opacity: isSubmitting ? 0.7 : 1 }} 
                 onClick={handleFinalCancelCheckin}
               >
@@ -310,7 +310,7 @@ export default function Home() {
               </button>
               <button 
                 className="btn ghost" 
-                disabled={isSubmitting || submitLock.current}
+                disabled={isSubmitting}
                 style={{ flex: 1, padding: '0.8rem', backgroundColor: '#f3f4f6' }} 
                 onClick={closeCancelModal}
               >
