@@ -20,6 +20,8 @@ export default function Admin() {
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 100;
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -63,10 +65,11 @@ export default function Admin() {
     setData(raw);
   };
 
-  // 논리 모순 제거: 조회 모드나 날짜가 변경되면 기존에 체크해둔(안 보이게 된) 체크박스 내역 초기화
+  // 논리 모순 제거: 조회 모드나 날짜, 정렬 필터가 변경되면 선택 내역과 페이지를 초기 화면으로 리셋 (UX 동기화)
   useEffect(() => {
     setSelectedIds([]);
-  }, [viewMode, selectedDate]);
+    setCurrentPage(1);
+  }, [viewMode, selectedDate, sortConfig]);
 
   // 성능 모순 제거: 불필요한 재필터링 방지 (상태 변경 시 매번 계산되는 낭비 방지)
   const displayedData = useMemo(() => {
@@ -234,7 +237,7 @@ export default function Admin() {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedIds(displayedData.map(item => item.id));
+      setSelectedIds(paginatedData.map(item => item.id)); // 화면에 보이는 현재 100개 페이지만 선택 (Option 1 적용)
     } else {
       setSelectedIds([]);
     }
@@ -373,6 +376,12 @@ export default function Admin() {
     });
   }, [displayedData, sortConfig, cumulativeCounts]);
 
+  const totalPages = Math.max(1, Math.ceil(sortedData.length / ITEMS_PER_PAGE));
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedData, currentPage]);
+
   const renderSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) return <ArrowUpDown size={14} style={{ color: '#d1d5db', marginLeft: '4px' }} />;
     if (sortConfig.direction === 'asc') return <ArrowUp size={14} style={{ color: '#3b82f6', marginLeft: '4px' }} />;
@@ -505,7 +514,7 @@ export default function Admin() {
                   <td colSpan="8" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>기록이 없습니다.</td>
                 </tr>
               ) : (
-                sortedData.map((item) => {
+                paginatedData.map((item) => {
                   const staff = getStaffInfo(item.name);
                   return (
                   <tr key={item.id}>
@@ -540,6 +549,31 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+
+        {/* 페이지네이션 (Pagination) 네비게이터 컨트롤 바 */}
+        {sortedData.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem', padding: '1rem 0', background: '#f9fafb', borderRadius: '12px' }}>
+            <button 
+              className="btn disabled-opacity" 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+              disabled={currentPage === 1}
+              style={{ padding: '0.4rem 1rem', margin: 0, opacity: currentPage === 1 ? 0.3 : 1, width: 'auto', backgroundColor: '#e5e7eb', color: '#374151', border: '1px solid #d1d5db' }}
+            >
+              이전
+            </button>
+            <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: 600 }}>
+              {currentPage} / {totalPages} <span style={{ fontWeight: 400, color: '#9ca3af' }}>페이지</span>
+            </span>
+            <button 
+              className="btn disabled-opacity" 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+              disabled={currentPage === totalPages}
+              style={{ padding: '0.4rem 1rem', margin: 0, opacity: currentPage === totalPages ? 0.3 : 1, width: 'auto', backgroundColor: '#e5e7eb', color: '#374151', border: '1px solid #d1d5db' }}
+            >
+              다음
+            </button>
+          </div>
+        )}
 
         <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.95rem', color: '#4b5563', fontWeight: 500, paddingLeft: '0.5rem' }}>
