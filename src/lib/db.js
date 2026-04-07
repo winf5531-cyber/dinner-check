@@ -162,7 +162,7 @@ export const clearAllData = async () => {
   const { error } = await supabase
     .from('checkins')
     .delete()
-    .neq('id', -999); // 모든 데이터를 안전하게 지우기 위한 더미 필터
+    .not('id', 'is', null); // UUID 타입 호환을 위해 -999 대신 안전한 null 필터링 사용
     
   if (error) {
     console.error('Error clearing data:', error);
