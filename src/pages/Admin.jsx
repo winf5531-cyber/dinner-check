@@ -24,6 +24,7 @@ export default function Admin() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [manualDate, setManualDate] = useState(new Date());
+  const [exportMonth, setExportMonth] = useState(new Date()); // 누락된 상태 변수 복구
   const [manualSearchQuery, setManualSearchQuery] = useState('');
   const [showManualDropdown, setShowManualDropdown] = useState(false);
   const manualFilteredStaff = manualSearchQuery.trim() === '' ? [] : STAFF_LIST.filter(s => s.name.includes(manualSearchQuery) && s.name !== manualSearchQuery.trim());
@@ -84,8 +85,8 @@ export default function Admin() {
   };
 
   const handleExport = async () => {
-    // 논리 모순 제거: 선택한 날짜에 맞춰 확실하게 엑셀 월(Month)을 출력하도록 동기화
-    const targetDate = new Date(selectedDate);
+    // 엑셀 다운로드는 전용 'exportMonth' 캘린더 값을 기준으로 출력
+    const targetDate = new Date(exportMonth);
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth(); // 0-based
 
