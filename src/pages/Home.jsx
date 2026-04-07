@@ -112,7 +112,7 @@ export default function Home() {
     // 명단에 등록된 이름인지 최종 확인 (외부인 입력 방지)
     const isStaff = STAFF_LIST.some(staff => staff.name === trimmedName);
     if (!isStaff) {
-      alert('등록되지 않은 이름입니다. 교직원 명단을 다시 확인해주세요.');
+      alert('교직원 명단에 없습니다. 영양 선생님에게 문의해 주세요.');
       return;
     }
 
