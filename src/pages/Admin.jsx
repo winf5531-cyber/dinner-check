@@ -617,6 +617,7 @@ export default function Admin() {
                         e.preventDefault();
                         setManualSearchQuery(s.name);
                         setShowManualDropdown(false);
+                        document.activeElement?.blur();
                       }}
                     >
                       <span style={{ color: '#6b7280', fontSize: '0.85rem', marginRight: '8px' }}>{s.role}</span>
