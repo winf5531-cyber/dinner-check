@@ -14,9 +14,24 @@ export default function Home() {
   const [filteredNames, setFilteredNames] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [today, setToday] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  const today = format(new Date(), 'yyyy-MM-dd');
   const displayDate = format(new Date(), 'M월 d일 (EEEE)', { locale: ko });
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const freshToday = format(new Date(), 'yyyy-MM-dd');
+        if (freshToday !== today) {
+          setToday(freshToday);
+          setHasCheckedIn(false); // 날짜가 바뀌면 뷰어 리셋
+          window.location.reload(); // 가장 깔끔하게 처음부터 다시 로딩
+        }
+      }
+    };
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => window.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [today]);
 
   useEffect(() => {
     // 1. QR 스캔 파라미터 확인 (폭탄 암호 적용)
