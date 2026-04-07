@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Utensils, CheckCircle } from 'lucide-react';
-import { saveCheckin, checkDuplicateCheckin, removeCheckinByNameAndDate, STAFF_LIST } from '../lib/db';
+import { saveCheckin, checkDuplicateCheckin, removeCheckinByNameAndDate, STAFF_LIST, STAFF_MAP } from '../lib/db';
 
 // InstallPrompt 기능 및 버튼 삭제됨 (QR 매일 스캔 정책과 충돌)
 
@@ -116,8 +116,8 @@ export default function Home() {
       return;
     }
 
-    // 공백이 완전히 제거된 깨끗한 이름이 명단에 있는지 확인
-    const isStaff = STAFF_LIST.some(staff => staff.name === cleanName);
+    // 공백이 완전히 제거된 깨끗한 이름이 명단에 있는지 확인 (O(1) 해시 맵 검색 최적화)
+    const isStaff = !!STAFF_MAP[cleanName];
     if (!isStaff) {
       alert('교직원 명단에 없습니다. 영양 선생님에게 문의해 주세요.');
       submitLock.current = false;
