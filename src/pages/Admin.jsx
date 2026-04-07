@@ -244,7 +244,7 @@ export default function Admin() {
       const dateStr = format(parsedDate, 'yyyy-MM-dd');
       const exists = data.find(d => d.name === staff.name && d.date === dateStr);
       if (exists) {
-        alert("이미 해당 날짜에 기록이 존재합니다.");
+        alert(`이미 해당 날짜에 ${staff.name} 선생님의 기록이 존재합니다.`);
         return;
       }
 
@@ -254,7 +254,7 @@ export default function Admin() {
         return;
       }
       if (result.duplicate) {
-        alert("이미 해당 날짜에 데이터베이스에 기록이 존재합니다.");
+        alert(`이미 해당 날짜에 ${staff.name} 선생님의 기록이 존재합니다.`);
         return;
       }
       setIsManualEntryOpen(false);

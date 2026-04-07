@@ -189,7 +189,7 @@ export default function Home() {
     
     const success = await removeCheckinByNameAndDate(cleanName, currentToday);
     if (!success) {
-      alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
+      alert('출석 취소 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
       submitLock.current = false;
       setIsSubmitting(false);
       return;
