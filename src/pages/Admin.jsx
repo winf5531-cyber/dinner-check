@@ -633,7 +633,7 @@ export default function Admin() {
 
         <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.95rem', color: '#4b5563', fontWeight: 500, paddingLeft: '0.5rem' }}>
-            총 <span style={{ color: '#3b82f6', fontWeight: 700 }}>{sortedData.length}</span>개의 데이터가 표시되고 있습니다.
+            <span style={{ color: '#3b82f6', fontWeight: 700 }}>{sortedData.length}</span>개의 데이터가 있습니다.
           </div>
           <button 
             className="btn danger" 
