@@ -19,7 +19,6 @@ export default function Admin() {
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [exportMonth, setExportMonth] = useState(new Date());
   const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
   const [selectedIds, setSelectedIds] = useState([]);
@@ -81,8 +80,10 @@ export default function Admin() {
   };
 
   const handleExport = async () => {
-    const year = exportMonth.getFullYear();
-    const month = exportMonth.getMonth(); // 0-based
+    // 논리 모순 제거: 선택한 날짜에 맞춰 확실하게 엑셀 월(Month)을 출력하도록 동기화
+    const targetDate = new Date(selectedDate);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth(); // 0-based
 
     // 평일 계산
     const daysInMonth = new Date(year, month + 1, 0).getDate();
