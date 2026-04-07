@@ -414,8 +414,9 @@ export default function Admin() {
   }
 
   return (
-    <div className="animate-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+    <>
+      <div className="animate-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1 style={{ textAlign: 'left', margin: 0 }}>영양교사 대시보드</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn primary" style={{ width: 'auto', backgroundColor: '#3b82f6', color: 'white' }} onClick={() => setIsManualEntryOpen(true)}>
@@ -639,6 +640,8 @@ export default function Admin() {
         </center>
       </div>
 
+      </div>
+
       {isManualEntryOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -711,6 +714,6 @@ export default function Admin() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -212,8 +212,9 @@ export default function Home() {
   }
 
   return (
-    <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
-      <div className="header">
+    <>
+      <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
+        <div className="header">
         <Utensils size={40} color="#3b82f6" style={{ marginBottom: '10px' }} />
         <h1>석식 체크</h1>
         <p>오늘도 고생 많으셨습니다!</p>
@@ -288,6 +289,8 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      </div>
 
       {showCancelModal && (
         <div style={{
@@ -321,6 +324,6 @@ export default function Home() {
         </div>
       )}
 
-    </div>
+    </>
   );
 }
