@@ -46,6 +46,16 @@ export default function Admin() {
     }
   }, [isStaffEditorOpen]);
 
+  // 모달 활성화 시 배경 스크롤 방지 (UX 개선)
+  useEffect(() => {
+    if (isStaffEditorOpen || isManualEntryOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isStaffEditorOpen, isManualEntryOpen]);
+
   const handleStaffChange = (index, field, value) => {
     const newData = [...editingStaffs];
     newData[index][field] = value;
@@ -274,8 +284,19 @@ export default function Admin() {
         }
       });
       
-      // 엑셀 내장 함수 적용 (예: COUNTIF(D3:Z3, "O"))
-      const endColLetter = String.fromCharCode(64 + 3 + weekdays.length);
+      // 엑셀 내장 함수 적용 (버그 방장: 컬럼이 26개 초과로 Z를 넘어가 AA, AB 등이 될 때 대응)
+      const getExcelColumnName = (colIndex) => {
+        let columnName = '';
+        let temp = colIndex;
+        while (temp > 0) {
+          let remainder = (temp - 1) % 26;
+          columnName = String.fromCharCode(65 + remainder) + columnName;
+          temp = Math.floor((temp - remainder) / 26);
+        }
+        return columnName;
+      };
+      
+      const endColLetter = getExcelColumnName(3 + weekdays.length);
       row.push({ formula: `COUNTIF(D${currentRowIdx}:${endColLetter}${currentRowIdx}, "O")` });
       
       const newRow = worksheet.addRow(row);
