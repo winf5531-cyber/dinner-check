@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, saveCheckin } from '../lib/db';
+import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -184,7 +184,7 @@ export default function Admin() {
   }, [data, viewMode, selectedDate]);
 
   const getStaffInfo = (name) => {
-    return STAFF_LIST.find(s => s.name === name) || { role: '-', id: '-' };
+    return STAFF_MAP[name] || { role: '-', id: '-' };
   };
 
   const handleDelete = async (id) => {

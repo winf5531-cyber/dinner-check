@@ -78,6 +78,11 @@ export const STAFF_LIST = [
   { id: 77, role: '온세종', name: '박진숙' }
 ];
 
+export const STAFF_MAP = STAFF_LIST.reduce((acc, staff) => {
+  acc[staff.name] = staff;
+  return acc;
+}, {});
+
 export const getCheckins = async () => {
   const { data, error } = await supabase
     .from('checkins')
