@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { CheckCircle, Utensils, Download } from 'lucide-react';
@@ -16,6 +16,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [today, setToday] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const submitLock = useRef(false);
 
   const displayDate = format(new Date(), 'M월 d일 (EEEE)', { locale: ko });
 
@@ -85,13 +86,20 @@ export default function Home() {
   };
 
   const handleCheckin = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || submitLock.current) return;
+    
+    // 이중 탭으로 인한 레이스 컨디션(동시 중복 데이터 삽입) 완벽 차단용 락
+    submitLock.current = true;
+    setIsSubmitting(true);
 
     // 핸드폰이 화면을 켜둔 채 자정을 넘겼을 경우를 대비하여, 누르는 순간의 날짜 갱신
     const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
+    
     if (!cleanName) {
       alert('성함을 입력해주세요!');
+      submitLock.current = false;
+      setIsSubmitting(false);
       return;
     }
 
@@ -99,21 +107,24 @@ export default function Home() {
     const isStaff = STAFF_LIST.some(staff => staff.name === cleanName);
     if (!isStaff) {
       alert('교직원 명단에 없습니다. 영양 선생님에게 문의해 주세요.');
+      submitLock.current = false;
+      setIsSubmitting(false);
       return;
     }
 
     const day = new Date().getDay();
     if (day === 0 || day === 6) {
       alert('주말에는 출석 체크를 할 수 없습니다.');
+      submitLock.current = false;
+      setIsSubmitting(false);
       return;
     }
-    
-    setIsSubmitting(true);
 
     // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
     const result = await saveCheckin(cleanName, currentToday);
     if (!result) {
       alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
+      submitLock.current = false;
       setIsSubmitting(false);
       return;
     }
@@ -123,6 +134,7 @@ export default function Home() {
       alert(`선생님, 이미 오늘(${format(new Date(), 'M월 d일')}) 출석체크가 완료되어 있습니다!`);
       localStorage.setItem('my_name', cleanName);
       setHasCheckedIn(true);
+      submitLock.current = false;
       setIsSubmitting(false);
       return;
     }
@@ -133,6 +145,7 @@ export default function Home() {
     
     setTimeout(() => {
       setAnimate(false);
+      submitLock.current = false;
       setIsSubmitting(false);
     }, 1500);
   };
@@ -153,9 +166,10 @@ export default function Home() {
   };
 
   const handleFinalCancelCheckin = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || submitLock.current) return;
 
     setShowCancelModal(false);
+    submitLock.current = true;
     setIsSubmitting(true);
     const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
@@ -163,10 +177,12 @@ export default function Home() {
     const success = await removeCheckinByNameAndDate(cleanName, currentToday);
     if (!success) {
       alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
+      submitLock.current = false;
       setIsSubmitting(false);
       return;
     }
     setHasCheckedIn(false);
+    submitLock.current = false;
     setIsSubmitting(false);
     // 이름은 그대로 두어 다시 수정/입력할 수 있게 합니다.
   };
@@ -230,7 +246,7 @@ export default function Home() {
                 </ul>
               )}
             </div>
-            <button className="btn" onClick={handleCheckin}>
+            <button className="btn" disabled={isSubmitting || submitLock.current} onClick={handleCheckin}>
               <CheckCircle size={20} /> 출석 체크 완료
             </button>
           </>
@@ -273,6 +289,7 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
               <button 
                 className="btn" 
+                disabled={isSubmitting || submitLock.current}
                 style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem' }} 
                 onClick={confirmCancelCheckin}
               >
@@ -280,6 +297,7 @@ export default function Home() {
               </button>
               <button 
                 className="btn ghost" 
+                disabled={isSubmitting || submitLock.current}
                 style={{ flex: 1, padding: '0.8rem', backgroundColor: '#f3f4f6' }} 
                 onClick={closeCancelModal}
               >
