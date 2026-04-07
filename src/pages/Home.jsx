@@ -36,33 +36,39 @@ export default function Home() {
   }, [today]);
 
   useEffect(() => {
+    let validSession = false;
+    
     // 1. QR 스캔 파라미터 확인 (폭탄 암호 적용)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('token') === 'dinner_pass_xyz_99812A') {
       sessionStorage.setItem('scanned_today', today);
       setIsScanned(true);
+      validSession = true;
       // 암호가 적힌 원래 URL을 즉시, 현재 주소창에서 흔적도 없이 증발시킴
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
       const scannedStatus = sessionStorage.getItem('scanned_today');
       if (scannedStatus === today) {
         setIsScanned(true);
+        validSession = true;
       }
     }
 
-    // 2. 본인이 썼던 이름이 로컬에 남아있으면 자동입력
-    const savedName = localStorage.getItem('my_name');
-    if (savedName) {
-      setName(savedName);
-      
-      // 이미 체크했는지 단일 쿼리로 확인 (전체 DB 호출 방지)
-      const checkStatus = async () => {
-        const alreadyChecked = await checkDuplicateCheckin(savedName, today);
-        if(alreadyChecked) {
-          setHasCheckedIn(true);
-        }
-      };
-      checkStatus();
+    // 2. 단말기 QR 인증이 통과된(validSession) 상태에서만 백엔드(DB) 중복 체크 진행 (미인증 세션 DB 자원 낭비 차단)
+    if (validSession) {
+      const savedName = localStorage.getItem('my_name');
+      if (savedName) {
+        setName(savedName);
+        
+        // 이미 체크했는지 단일 쿼리로 확인 (전체 DB 호출 방지)
+        const checkStatus = async () => {
+          const alreadyChecked = await checkDuplicateCheckin(savedName, today);
+          if (alreadyChecked) {
+            setHasCheckedIn(true);
+          }
+        };
+        checkStatus();
+      }
     }
 
   }, [today]);
