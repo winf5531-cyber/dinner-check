@@ -103,8 +103,16 @@ export default function Home() {
   const handleCheckin = async () => {
     if (isSubmitting) return;
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       alert('성함을 입력해주세요!');
+      return;
+    }
+
+    // 명단에 등록된 이름인지 최종 확인 (외부인 입력 방지)
+    const isStaff = STAFF_LIST.some(staff => staff.name === trimmedName);
+    if (!isStaff) {
+      alert('등록되지 않은 이름입니다. 교직원 명단을 다시 확인해주세요.');
       return;
     }
 
@@ -117,7 +125,7 @@ export default function Home() {
     setIsSubmitting(true);
 
     // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
-    const result = await saveCheckin(name.trim(), today);
+    const result = await saveCheckin(trimmedName, today);
     if (!result) {
       alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
       setIsSubmitting(false);
@@ -127,13 +135,13 @@ export default function Home() {
     // 이미 오늘 수동 혹은 다른 기기로 체크한 경우
     if (result.duplicate) {
       alert(`선생님, 이미 오늘(${format(new Date(), 'M월 d일')}) 출석체크가 완료되어 있습니다!`);
-      localStorage.setItem('my_name', name.trim());
+      localStorage.setItem('my_name', trimmedName);
       setHasCheckedIn(true);
       setIsSubmitting(false);
       return;
     }
 
-    localStorage.setItem('my_name', name.trim());
+    localStorage.setItem('my_name', trimmedName);
     setHasCheckedIn(true);
     setAnimate(true);
     
