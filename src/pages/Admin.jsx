@@ -61,6 +61,11 @@ export default function Admin() {
     setData(raw);
   };
 
+  // 논리 모순 제거: 조회 모드나 날짜가 변경되면 기존에 체크해둔(안 보이게 된) 체크박스 내역 초기화
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [viewMode, selectedDate]);
+
   const displayedData = data.filter(item => {
     if (viewMode === 'all') return true;
     return item.date === selectedDate;

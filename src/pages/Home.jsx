@@ -92,8 +92,15 @@ export default function Home() {
     submitLock.current = true;
     setIsSubmitting(true);
 
-    // 핸드폰이 화면을 켜둔 채 자정을 넘겼을 경우를 대비하여, 누르는 순간의 날짜 갱신
     const currentToday = format(new Date(), 'yyyy-MM-dd');
+
+    // 화면이 켜진 상태로 자정이 넘어가는 극단적 경우(물리적 QR스캔 우회) 원천 차단
+    if (sessionStorage.getItem('scanned_today') !== currentToday) {
+      alert("세션 유효기간(오늘)이 지났거나 만료되었습니다. 급식실 코드를 다시 스캔하세요.");
+      window.location.reload();
+      return;
+    }
+
     const cleanName = name.replace(/\s+/g, '');
     
     if (!cleanName) {
