@@ -97,6 +97,21 @@ export const getCheckins = async () => {
   return data;
 };
 
+// 엑셀 다운로드 전용 함수: 클라이언트 1만 건 제한 버그(과거 데이터 증발 현상)를 방지하기 위해 해당 월의 데이터만 서버에서 완전 추출
+export const getCheckinsByMonth = async (yearMonthStr) => {
+  const { data, error } = await supabase
+    .from('checkins')
+    .select('*')
+    .gte('date', `${yearMonthStr}-01`)
+    .lte('date', `${yearMonthStr}-31`);
+    
+  if (error) {
+    console.error('Error fetching checkins by month:', error);
+    return [];
+  }
+  return data;
+};
+
 export const checkDuplicateCheckin = async (name, date) => {
   const { data, error } = await supabase
     .from('checkins')

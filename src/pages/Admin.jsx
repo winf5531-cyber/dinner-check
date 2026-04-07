@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin } from '../lib/db';
+import { getCheckins, getCheckinsByMonth, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -128,9 +128,13 @@ export default function Admin() {
     }
     worksheet.getColumn(lastColIndex).width = 8;
 
-    // O(1) 검색을 위한 데이터 딕셔너리 캐싱 (매 셀마다 1만 개 배열을 뒤지는 1700만 번의 루프 모순 제거)
+    // 엑셀 전용 API 호출: 현재 표시된 1만 건 데이터(data)에 의존하지 않고 서버에서 해당 월의 모든 데이터를 새로고침 (과거 데이터 증발 버그 차단)
+    const targetMonthPrefix = format(targetDate, 'yyyy-MM');
+    const monthRawData = await getCheckinsByMonth(targetMonthPrefix);
+
+    // O(1) 검색을 위한 데이터 딕셔너리 캐싱 (매 셀마다 루프 도는 방식 제거)
     const checkinMap = {};
-    data.forEach(c => {
+    monthRawData.forEach(c => {
       checkinMap[`${c.name}_${c.date}`] = true;
     });
 
