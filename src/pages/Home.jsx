@@ -103,6 +103,8 @@ export default function Home() {
   const handleCheckin = async () => {
     if (isSubmitting) return;
 
+    // 핸드폰이 화면을 켜둔 채 자정을 넘겼을 경우를 대비하여, 누르는 순간의 날짜 갱신
+    const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
     if (!cleanName) {
       alert('성함을 입력해주세요!');
@@ -125,7 +127,7 @@ export default function Home() {
     setIsSubmitting(true);
 
     // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
-    const result = await saveCheckin(cleanName, today);
+    const result = await saveCheckin(cleanName, currentToday);
     if (!result) {
       alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
       setIsSubmitting(false);
@@ -154,10 +156,11 @@ export default function Home() {
   const handleCancelCheckin = async () => {
     if (isSubmitting) return;
 
+    const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
     if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
       setIsSubmitting(true);
-      const success = await removeCheckinByNameAndDate(cleanName, today);
+      const success = await removeCheckinByNameAndDate(cleanName, currentToday);
       if (!success) {
         alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
         setIsSubmitting(false);
