@@ -65,10 +65,13 @@ export default function Admin() {
     setSelectedIds([]);
   }, [viewMode, selectedDate]);
 
-  const displayedData = data.filter(item => {
-    if (viewMode === 'all') return true;
-    return item.date === selectedDate;
-  });
+  // 성능 모순 제거: 불필요한 재필터링 방지 (상태 변경 시 매번 계산되는 낭비 방지)
+  const displayedData = useMemo(() => {
+    return data.filter(item => {
+      if (viewMode === 'all') return true;
+      return item.date === selectedDate;
+    });
+  }, [data, viewMode, selectedDate]);
 
   const handleLogin = () => {
     if (password === '1234') {
@@ -305,45 +308,48 @@ export default function Admin() {
     setSortConfig({ key, direction });
   };
 
-  const sortedData = [...displayedData].sort((a, b) => {
-    const staffA = getStaffInfo(a.name);
-    const staffB = getStaffInfo(b.name);
-    
-    let aValue, bValue;
-    switch (sortConfig.key) {
-      case 'id':
-        aValue = staffA.id === '-' ? 999 : parseInt(staffA.id, 10);
-        bValue = staffB.id === '-' ? 999 : parseInt(staffB.id, 10);
-        break;
-      case 'role':
-        aValue = staffA.role;
-        bValue = staffB.role;
-        break;
-      case 'name':
-        aValue = a.name;
-        bValue = b.name;
-        break;
-      case 'date':
-        aValue = a.date;
-        bValue = b.date;
-        break;
-      case 'timestamp':
-        aValue = a.timestamp;
-        bValue = b.timestamp;
-        break;
-      case 'cumulative':
-        aValue = getCumulativeCount(a.name);
-        bValue = getCumulativeCount(b.name);
-        break;
-      default:
-        aValue = a.timestamp;
-        bValue = b.timestamp;
-    }
+  // 성능 최적화: 단순 문자열 입력이나 체크박스 클릭 등 무관한 상태 변경 시 막대한 연산량이 소모되는 전체 표의 재정렬(O(N log N)) 낭비를 차단
+  const sortedData = useMemo(() => {
+    return [...displayedData].sort((a, b) => {
+      const staffA = getStaffInfo(a.name);
+      const staffB = getStaffInfo(b.name);
+      
+      let aValue, bValue;
+      switch (sortConfig.key) {
+        case 'id':
+          aValue = staffA.id === '-' ? 999 : parseInt(staffA.id, 10);
+          bValue = staffB.id === '-' ? 999 : parseInt(staffB.id, 10);
+          break;
+        case 'role':
+          aValue = staffA.role;
+          bValue = staffB.role;
+          break;
+        case 'name':
+          aValue = a.name;
+          bValue = b.name;
+          break;
+        case 'date':
+          aValue = a.date;
+          bValue = b.date;
+          break;
+        case 'timestamp':
+          aValue = a.timestamp;
+          bValue = b.timestamp;
+          break;
+        case 'cumulative':
+          aValue = cumulativeCounts[a.name] || 0;
+          bValue = cumulativeCounts[b.name] || 0;
+          break;
+        default:
+          aValue = a.timestamp;
+          bValue = b.timestamp;
+      }
 
-    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [displayedData, sortConfig, cumulativeCounts]);
 
   const renderSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) return <ArrowUpDown size={14} style={{ color: '#d1d5db', marginLeft: '4px' }} />;
