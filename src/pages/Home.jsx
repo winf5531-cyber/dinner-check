@@ -239,7 +239,7 @@ export default function Home() {
                 onKeyDown={(e) => e.key === 'Enter' && handleCheckin()}
                 style={{ position: 'relative', zIndex: 60, marginBottom: showDropdown ? '0' : '1rem' }}
                 onFocus={() => { if(name.trim() && filteredNames.length > 0) setShowDropdown(true); }}
-                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                onBlur={() => setShowDropdown(false)}
                 lang="ko"
                 spellCheck="false"
                 autoComplete="off"
@@ -250,7 +250,10 @@ export default function Home() {
                     <li 
                       key={staff.id} 
                       className="dropdown-item"
-                      onClick={() => handleSelectName(staff.name)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelectName(staff.name);
+                      }}
                     >
                       <span style={{ fontSize: '0.8rem', color: '#6b7280', marginRight: '0.5rem' }}>{staff.role}</span>
                       {staff.name}
