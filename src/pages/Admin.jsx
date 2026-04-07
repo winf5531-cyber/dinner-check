@@ -35,6 +35,8 @@ export default function Admin() {
   // 명단 에디터(Staff Editor) 관련 상태
   const [isStaffEditorOpen, setIsStaffEditorOpen] = useState(false);
   const [editingStaffs, setEditingStaffs] = useState([]);
+  const [draggedRowIndex, setDraggedRowIndex] = useState(null);
+  const [dragTargetIndex, setDragTargetIndex] = useState(null);
 
   useEffect(() => {
     if (isStaffEditorOpen) {
@@ -68,6 +70,44 @@ export default function Admin() {
   const handleAutoRenumber = () => {
     const newData = editingStaffs.map((s, idx) => ({ ...s, seq_num: idx + 1 }));
     setEditingStaffs(newData);
+  };
+
+  const handleDragStart = (e, index) => {
+    // 입력 필드 등 내부 요소를 포커스할 때 드래그되는 것을 막기 위한 예외 처리 (필요시)
+    if (['INPUT', 'BUTTON'].includes(e.target.tagName)) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedRowIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.parentNode);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (dragTargetIndex !== index) {
+      setDragTargetIndex(index);
+    }
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    if (draggedRowIndex === null || draggedRowIndex === dropIndex) {
+      setDraggedRowIndex(null);
+      setDragTargetIndex(null);
+      return;
+    }
+    const newData = [...editingStaffs];
+    const [movedItem] = newData.splice(draggedRowIndex, 1);
+    newData.splice(dropIndex, 0, movedItem);
+    setEditingStaffs(newData);
+    setDraggedRowIndex(null);
+    setDragTargetIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedRowIndex(null);
+    setDragTargetIndex(null);
   };
 
   const handleSaveStaffs = async () => {
@@ -747,7 +787,22 @@ export default function Admin() {
                 </thead>
                 <tbody>
                   {editingStaffs.map((s, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+                    <tr 
+                      key={index}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      style={{ 
+                        borderBottom: '1px solid #e5e7eb', 
+                        background: dragTargetIndex === index ? '#e0f2fe' : (draggedRowIndex === index ? '#f9fafb' : '#fff'),
+                        opacity: draggedRowIndex === index ? 0.4 : 1,
+                        cursor: 'grab',
+                        transition: 'background-color 0.2s',
+                        userSelect: 'none'
+                      }}
+                    >
                       <td style={{ padding: '0.25rem 0.5rem' }}>
                         <input 
                           type="number" 
