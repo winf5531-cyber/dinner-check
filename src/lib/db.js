@@ -138,14 +138,20 @@ export const removeCheckin = async (id) => {
 
 export const removeMultipleCheckins = async (ids) => {
   if (!ids || ids.length === 0) return;
-  const { error } = await supabase
-    .from('checkins')
-    .delete()
-    .in('id', ids);
-    
-  if (error) {
-    console.error('Error removing multiple checkins:', error);
-    throw error;
+  
+  // URL 길이 제한(414 Error) 방지를 위해 100개씩 분할(Chunk) 전송
+  const CHUNK_SIZE = 100;
+  for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+    const chunk = ids.slice(i, i + CHUNK_SIZE);
+    const { error } = await supabase
+      .from('checkins')
+      .delete()
+      .in('id', chunk);
+      
+    if (error) {
+      console.error(`Error removing checkins chunk [${i} - ${i + CHUNK_SIZE}]:`, error);
+      throw error;
+    }
   }
 };
 
