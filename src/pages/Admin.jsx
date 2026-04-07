@@ -128,15 +128,20 @@ export default function Admin() {
     }
     worksheet.getColumn(lastColIndex).width = 8;
 
+    // O(1) 검색을 위한 데이터 딕셔너리 캐싱 (매 셀마다 1만 개 배열을 뒤지는 1700만 번의 루프 모순 제거)
+    const checkinMap = {};
+    data.forEach(c => {
+      checkinMap[`${c.name}_${c.date}`] = true;
+    });
+
     let currentRowIdx = 3;
     STAFF_LIST.forEach((staff, index) => {
       const row = [staff.id, staff.role, staff.name];
       
       weekdays.forEach(d => {
         const dateStr = format(d, 'yyyy-MM-dd');
-        // raw data 자체(data)에서 누적 조회
-        const checkedIn = data.find(c => c.name === staff.name && c.date === dateStr);
-        if (checkedIn) {
+        // 단일 해시 키 조회로 기존 .find() 대비 수천 배 성능 폭발
+        if (checkinMap[`${staff.name}_${dateStr}`]) {
           row.push('O');
         } else {
           row.push('');
