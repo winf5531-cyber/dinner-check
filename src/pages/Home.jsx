@@ -14,6 +14,7 @@ export default function Home() {
   const [filteredNames, setFilteredNames] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [today, setToday] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   const displayDate = format(new Date(), 'M월 d일 (EEEE)', { locale: ko });
@@ -136,23 +137,42 @@ export default function Home() {
     }, 1500);
   };
 
-  const handleCancelCheckin = async () => {
+  // 출석체크 취소 버튼 클릭 시 첫 번째 경고창 (모달) 띄우기
+  const handleCancelClick = () => {
+    setShowCancelModal(true);
+  };
+
+  // 모달 닫기
+  const closeCancelModal = () => {
+    setShowCancelModal(false);
+  };
+
+  // 첫 번째 경고창(모달)에서 '예'를 누른 경우, 네이티브 확인창 한 번 더 실행
+  const confirmCancelCheckin = () => {
+    if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
+      handleFinalCancelCheckin();
+    } else {
+      setShowCancelModal(false);
+    }
+  };
+
+  const handleFinalCancelCheckin = async () => {
     if (isSubmitting) return;
 
+    setShowCancelModal(false);
+    setIsSubmitting(true);
     const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
-    if (window.confirm('혹시 실수로 취소 버튼을 누르셨나요?\\n진짜 석식 체크를 취소하시겠습니까? (기록이 바로 삭제됩니다)')) {
-      setIsSubmitting(true);
-      const success = await removeCheckinByNameAndDate(cleanName, currentToday);
-      if (!success) {
-        alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
-        setIsSubmitting(false);
-        return;
-      }
-      setHasCheckedIn(false);
+    
+    const success = await removeCheckinByNameAndDate(cleanName, currentToday);
+    if (!success) {
+      alert('데이터 삭제 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
       setIsSubmitting(false);
-      // 이름은 그대로 두어 다시 수정/입력할 수 있게 합니다.
+      return;
     }
+    setHasCheckedIn(false);
+    setIsSubmitting(false);
+    // 이름은 그대로 두어 다시 수정/입력할 수 있게 합니다.
   };
 
   if (!isScanned) {
@@ -236,13 +256,44 @@ export default function Home() {
             <button 
               className="btn danger" 
               style={{ marginTop: '0.8rem', backgroundColor: '#fff0f0', color: '#ef4444', border: '1px solid #fecaca', boxShadow: 'none' }}
-              onClick={handleCancelCheckin}
+              onClick={handleCancelClick}
             >
                잘못 눌렀어요 (출석체크 취소)
             </button>
           </div>
         )}
       </div>
+
+      {showCancelModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div className="glass-card animate-up" style={{ width: '100%', maxWidth: '320px', backgroundColor: '#fff', padding: '2rem 1.5rem', borderRadius: '24px', textAlign: 'center' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#1f2937', fontSize: '1.1rem', wordBreak: 'keep-all', lineHeight: '1.5' }}>
+              오늘의 출석 체크를 정말 취소하겠습니까?
+            </h3>
+            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+              <button 
+                className="btn" 
+                style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', padding: '0.8rem' }} 
+                onClick={confirmCancelCheckin}
+              >
+                예
+              </button>
+              <button 
+                className="btn ghost" 
+                style={{ flex: 1, padding: '0.8rem', backgroundColor: '#f3f4f6' }} 
+                onClick={closeCancelModal}
+              >
+                아니오
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
