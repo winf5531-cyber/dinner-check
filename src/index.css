@@ -20,6 +20,7 @@ body {
   justify-content: center;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100svh; /* 모바일 Safari 하단바 영역으로 인한 잘림 현상 방지 */
   background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
   background-attachment: fixed;
   user-select: none;
@@ -60,9 +61,12 @@ p {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.glass-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+/* 모바일 터치 시 호버가 영구적으로 끈적하게 남는 현상(Sticky Hover) 방지 */
+@media (hover: hover) {
+  .glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+  }
 }
 
 .btn {
@@ -84,10 +88,12 @@ p {
   box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
 }
 
-.btn:hover {
-  background-color: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  }
 }
 
 .btn:active {
@@ -99,17 +105,21 @@ p {
   box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
 }
 
-.btn.success:hover {
-  background-color: #059669;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+@media (hover: hover) {
+  .btn.success:hover:not(:disabled) {
+    background-color: #059669;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  }
 }
 
 .btn.danger {
   background-color: #ef4444;
   box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39);
 }
-.btn.danger:hover {
-  background-color: #dc2626;
+@media (hover: hover) {
+  .btn.danger:hover:not(:disabled) {
+    background-color: #dc2626;
+  }
 }
 
 .btn.ghost {
@@ -118,10 +128,12 @@ p {
   box-shadow: none;
   border: 1px solid #e5e7eb;
 }
-.btn.ghost:hover {
-  background-color: #f3f4f6;
-  color: #374151;
-  transform: none;
+@media (hover: hover) {
+  .btn.ghost:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    color: #374151;
+    transform: none;
+  }
 }
 
 input, select {
@@ -164,6 +176,7 @@ input:focus, select:focus {
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 환경에서 가로 스크롤이 뻣뻣하지 않고 부드럽게(관성) 넘어가도록 처리 */
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
