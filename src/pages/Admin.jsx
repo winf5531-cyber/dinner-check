@@ -39,7 +39,10 @@ export default function Admin() {
         .channel('admin-checkins')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setData(prev => [payload.new, ...prev]);
+            setData(prev => {
+              const next = [payload.new, ...prev];
+              return next.length > 10000 ? next.slice(0, 10000) : next; // 메모리 팽창 폭탄 방지 (DB와 동일한 1만 건 제한 엄수)
+            });
           } else if (payload.eventType === 'DELETE') {
             setData(prev => prev.filter(item => item.id !== payload.old.id));
           }
@@ -423,15 +426,26 @@ export default function Admin() {
           </div>
           
           {viewMode === 'daily' && (
-            <DatePicker
-              selected={new Date(selectedDate)}
-              onChange={(date) => {
-                if (date) setSelectedDate(format(date, 'yyyy-MM-dd'));
-              }}
-              locale={ko}
-              dateFormat="yyyy-MM-dd"
-              className="custom-datepicker"
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <DatePicker
+                selected={new Date(selectedDate)}
+                onChange={(date) => {
+                  if (date) setSelectedDate(format(date, 'yyyy-MM-dd'));
+                }}
+                locale={ko}
+                dateFormat="yyyy-MM-dd"
+                className="custom-datepicker"
+              />
+              {selectedDate !== format(new Date(), 'yyyy-MM-dd') && (
+                <button 
+                  className="btn success" 
+                  style={{ width: 'auto', margin: 0, padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                  onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
+                >
+                  오늘로 복귀
+                </button>
+              )}
+            </div>
           )}
         </div>
 
