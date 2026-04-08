@@ -8,7 +8,19 @@ import { Loader2 } from 'lucide-react';
 function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(false);
-  const schoolId = localStorage.getItem('school_id');
+  
+  // 첫 렌더링 시 URL 파라미터에서 QR 자동 로그인 토큰을 파싱
+  const [schoolId, setSchoolId] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qId = urlParams.get('school_id');
+    const qName = urlParams.get('school_name');
+    if (qId && qName) {
+      localStorage.setItem('school_id', qId);
+      localStorage.setItem('school_name', decodeURIComponent(qName));
+      return qId;
+    }
+    return localStorage.getItem('school_id');
+  });
 
   useEffect(() => {
     const initApp = async () => {

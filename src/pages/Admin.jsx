@@ -848,7 +848,7 @@ export default function Admin() {
         <p style={{ fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center', color: '#374151' }}>스마트폰 카메라로<br/>아래 QR 코드를 스캔하세요!</p>
         <center>
           <div style={{ display: 'inline-block', maxWidth: '350px', padding: '1.5rem', background: 'white', border: '5px solid black', borderRadius: '20px', margin: '0 auto' }}>
-            <QRCodeSVG value={`${window.location.origin}?token=dinner_pass_xyz_99812A`} size={300} level="H" style={{ width: '100%', height: 'auto' }} />
+            <QRCodeSVG value={`${window.location.origin}?token=dinner_pass_xyz_99812A&school_id=${selectedSchool.id}&school_name=${encodeURIComponent(selectedSchool.name)}`} size={300} level="H" style={{ width: '100%', height: 'auto' }} />
           </div>
         </center>
       </div>
