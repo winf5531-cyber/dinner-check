@@ -24,7 +24,8 @@ export const fetchStaffList = async (schoolId) => {
     .from('staffs')
     .select('*')
     .eq('school_id', schoolId)
-    .order('seq_num', { ascending: true });
+    .order('seq_num', { ascending: true })
+    .limit(10000);
     
   if (error) {
     console.error('Error fetching staffs:', error);
@@ -100,7 +101,8 @@ export const getCheckinsByMonth = async (yearMonthStr, schoolId) => {
     .select('*')
     .eq('school_id', schoolId)
     .gte('date', `${yearMonthStr}-01`)
-    .lte('date', `${yearMonthStr}-31`);
+    .lte('date', `${yearMonthStr}-31`)
+    .limit(10000);
     
   if (error) {
     console.error('Error fetching checkins by month:', error);
@@ -116,7 +118,8 @@ export const checkDuplicateCheckin = async (name, date, schoolId) => {
     .select('id')
     .eq('school_id', schoolId)
     .eq('name', name)
-    .eq('date', date);
+    .eq('date', date)
+    .limit(1);
   
   if (error) {
     console.error('Error checking duplicate:', error);
