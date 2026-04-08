@@ -60,7 +60,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={schoolId ? <Home /> : <Navigate to="/admin" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
