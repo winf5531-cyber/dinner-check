@@ -239,9 +239,9 @@ export default function Home() {
                 value={name}
                 onChange={handleNameChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleCheckin()}
-                style={{ position: 'relative', zIndex: 60, marginBottom: showDropdown ? '0' : '1rem' }}
+                style={{ position: 'relative', zIndex: 60, marginBottom: '1rem' }}
                 onFocus={() => { if(name.trim() && filteredNames.length > 0) setShowDropdown(true); }}
-                onBlur={() => setShowDropdown(false)}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                 lang="ko"
                 spellCheck="false"
                 autoComplete="off"
