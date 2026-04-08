@@ -228,7 +228,7 @@ export default function Admin() {
        alert("학교를 먼저 선택해 주세요.");
        return;
     }
-    if (password === '1234') {
+    if (password === 'h2026!!') {
       const prevId = localStorage.getItem('school_id');
       localStorage.setItem('school_id', selectedSchool.id);
       localStorage.setItem('school_name', selectedSchool.name);

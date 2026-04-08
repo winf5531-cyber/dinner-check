@@ -264,7 +264,7 @@ export default function Home() {
               )}
             </div>
             <button className="btn" disabled={isSubmitting} onClick={handleCheckin}>
-              <CheckCircle size={20} /> 출석 체크 완료
+              <CheckCircle size={20} /> 출석 체크
             </button>
           </>
         ) : (
