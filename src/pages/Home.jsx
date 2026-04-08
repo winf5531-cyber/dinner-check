@@ -265,7 +265,17 @@ export default function Home() {
                 </ul>
               )}
             </div>
-            <button className="btn" disabled={isSubmitting} onClick={handleCheckin}>
+            <button 
+              className="btn" 
+              disabled={isSubmitting} 
+              onPointerDown={(e) => {
+                // 모바일 키보드가 닫히면서 첫 번째 탭을 삼켜버리는 현상(Tap Swallow) 방지
+                e.preventDefault();
+                document.activeElement?.blur();
+                handleCheckin();
+              }}
+              onClick={handleCheckin}
+            >
               <CheckCircle size={20} /> 출석 체크
             </button>
           </>
