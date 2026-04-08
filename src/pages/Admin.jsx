@@ -569,10 +569,11 @@ export default function Admin() {
           <div style={{ position: 'relative', marginBottom: '1rem' }}>
             <input
               type="text"
+              className={selectedSchool.name && !schoolKeyword ? "selected-school-input" : ""}
               placeholder={selectedSchool.name ? `${selectedSchool.name} (선택됨)` : "먼저 소속 학교를 검색하세요"}
               value={schoolKeyword}
               onChange={(e) => handleSchoolSearch(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #d1d5db', boxSizing: 'border-box', textAlign: 'center' }}
             />
             {schoolSuggestions.length > 0 && (
               <div style={{

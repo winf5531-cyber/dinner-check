@@ -373,3 +373,9 @@ tr:last-child td {
     border-radius: 50% !important;
   }
 }
+
+.selected-school-input::placeholder {
+  color: #111827 !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
