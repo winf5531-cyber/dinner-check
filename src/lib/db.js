@@ -62,8 +62,10 @@ export const saveStaffList = async (newList, schoolId) => {
       school_id: schoolId
     }));
     
-    const { error: insertError } = await supabase.from('staffs').insert(inserts);
-    if (insertError) throw insertError;
+    if (inserts.length > 0) {
+      const { error: insertError } = await supabase.from('staffs').insert(inserts);
+      if (insertError) throw insertError;
+    }
     
     // 3. 로컬 캐시 동기화
     await fetchStaffList(schoolId);

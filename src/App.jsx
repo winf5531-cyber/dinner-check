@@ -16,7 +16,7 @@ function App() {
     const qName = urlParams.get('school_name');
     if (qId && qName) {
       localStorage.setItem('school_id', qId);
-      localStorage.setItem('school_name', decodeURIComponent(qName));
+      localStorage.setItem('school_name', qName);
       return qId;
     }
     return localStorage.getItem('school_id');
