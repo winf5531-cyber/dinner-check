@@ -45,8 +45,10 @@ export default function Home() {
       sessionStorage.setItem('scanned_today', today);
       setIsScanned(true);
       validSession = true;
-      // 암호가 적힌 원래 URL을 즉시, 현재 주소창에서 흔적도 없이 증발시킴
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // 암호(token)만 증발시키고, school_id 등은 남겨두어 모바일 브라우저 새로고침(localStorage 소멸) 환경에서도 안전하게 Home을 유지
+      urlParams.delete('token');
+      const newUrl = window.location.pathname + '?' + urlParams.toString();
+      window.history.replaceState({}, document.title, newUrl);
     } else {
       const scannedStatus = sessionStorage.getItem('scanned_today');
       if (scannedStatus === today) {
