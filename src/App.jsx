@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import { fetchStaffList } from './lib/db';
@@ -8,17 +8,23 @@ import { Loader2 } from 'lucide-react';
 function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(false);
+  const schoolId = localStorage.getItem('school_id');
 
   useEffect(() => {
     const initApp = async () => {
-      const success = await fetchStaffList();
+      // 학교가 미설정된 기기라면 데이터 패치를 패스하고, 나중에 Admin 페이지에서 설정하도록 둠
+      if (!schoolId) {
+        setIsInitializing(false);
+        return;
+      }
+      const success = await fetchStaffList(schoolId);
       if (!success) {
         setInitError(true);
       }
       setIsInitializing(false);
     };
     initApp();
-  }, []);
+  }, [schoolId]);
 
   if (isInitializing) {
     return (
@@ -33,8 +39,8 @@ function App() {
   if (initError) {
     return (
       <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fef2f2' }}>
-        <h2 style={{ color: '#b91c1c' }}>명단 설정 오류</h2>
-        <p style={{ color: '#991b1b' }}>Supabase staffs 테이블 세팅을 확인해주세요.</p>
+        <h2 style={{ color: '#b91c1c' }}>시스템 접속 오류</h2>
+        <p style={{ color: '#991b1b' }}>할당된 학교 데이터를 불러오지 못했습니다.</p>
       </div>
     );
   }
@@ -42,7 +48,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={schoolId ? <Home /> : <Navigate to="/admin" replace />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>

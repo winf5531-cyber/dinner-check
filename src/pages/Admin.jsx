@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCheckins, getCheckinsByMonth, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin, saveStaffList } from '../lib/db';
+import { searchSchools, getCheckins, getCheckinsByMonth, removeCheckin, removeMultipleCheckins, clearAllData, STAFF_LIST, STAFF_MAP, saveCheckin, saveStaffList } from '../lib/db';
 import { format } from 'date-fns';
 import { Lock, Download, Trash2, ArrowLeft, Printer, ArrowDown, ArrowUp, ArrowUpDown, Users, Plus, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,24 @@ export default function Admin() {
     return sessionStorage.getItem('adminAuth') === 'true';
   });
   const [data, setData] = useState([]);
+  
+  const [schoolKeyword, setSchoolKeyword] = useState('');
+  const [schoolSuggestions, setSchoolSuggestions] = useState([]);
+  const [selectedSchool, setSelectedSchool] = useState({
+    id: localStorage.getItem('school_id') || '',
+    name: localStorage.getItem('school_name') || ''
+  });
+
+  const handleSchoolSearch = async (kw) => {
+    setSchoolKeyword(kw);
+    if (kw.trim().length < 2) {
+      setSchoolSuggestions([]);
+      return;
+    }
+    const results = await searchSchools(kw);
+    setSchoolSuggestions(results);
+  };
+  
   const [viewMode, setViewMode] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
@@ -145,7 +163,8 @@ export default function Admin() {
     const validStaffs = editingStaffs.filter(s => s.name.trim() !== '' && s.role.trim() !== '');
     
     // Loading State 처리 우회 대신 명시적인 알림 사용
-    const result = await saveStaffList(validStaffs);
+    const schoolId = localStorage.getItem('school_id');
+    const result = await saveStaffList(validStaffs, schoolId);
     if (result.success) {
       alert("데이터 동기화 완료! 시스템을 안전하게 재시작합니다.");
       window.location.reload(); 
@@ -165,6 +184,8 @@ export default function Admin() {
         .channel('admin-checkins')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'checkins' }, (payload) => {
           if (payload.eventType === 'INSERT') {
+            const currentSchoolId = localStorage.getItem('school_id');
+            if (String(payload.new.school_id) !== String(currentSchoolId)) return;
             setData(prev => {
               const next = [payload.new, ...prev];
               return next.length > 10000 ? next.slice(0, 10000) : next; // 메모리 팽창 폭탄 방지 (DB와 동일한 1만 건 제한 엄수)
@@ -182,7 +203,8 @@ export default function Admin() {
   }, [isAuthenticated]);
 
   const loadData = async () => {
-    const raw = await getCheckins();
+    const schoolId = localStorage.getItem('school_id');
+    const raw = await getCheckins(schoolId);
     // 데이터는 렌더링 시 sortedData에서 자동 정렬되므로 여기서 중복으로 정렬할 필요가 없음
     setData(raw);
   };
@@ -202,9 +224,19 @@ export default function Admin() {
   }, [data, viewMode, selectedDate]);
 
   const handleLogin = () => {
+    if (!selectedSchool.id) {
+       alert("학교를 먼저 선택해 주세요.");
+       return;
+    }
     if (password === '1234') {
-      setIsAuthenticated(true);
+      const prevId = localStorage.getItem('school_id');
+      localStorage.setItem('school_id', selectedSchool.id);
+      localStorage.setItem('school_name', selectedSchool.name);
       sessionStorage.setItem('adminAuth', 'true');
+      setIsAuthenticated(true);
+      if (prevId !== String(selectedSchool.id)) {
+        window.location.reload();
+      }
     } else {
       alert('비밀번호가 틀렸습니다.');
     }
@@ -262,7 +294,8 @@ export default function Admin() {
 
     // 엑셀 전용 API 호출: 현재 표시된 1만 건 데이터(data)에 의존하지 않고 서버에서 해당 월의 모든 데이터를 새로고침 (과거 데이터 증발 버그 차단)
     const targetMonthPrefix = format(targetDate, 'yyyy-MM');
-    const monthRawData = await getCheckinsByMonth(targetMonthPrefix);
+    const schoolId = localStorage.getItem('school_id');
+    const monthRawData = await getCheckinsByMonth(targetMonthPrefix, schoolId);
 
     // O(1) 검색을 위한 데이터 딕셔너리 캐싱 (매 셀마다 루프 도는 방식 제거)
     const checkinMap = {};
@@ -317,7 +350,8 @@ export default function Admin() {
     });
 
       const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), `${year}년_${month + 1}월_석식체크.xlsx`);
+      const schoolName = localStorage.getItem('school_name') || '세종캠퍼스고';
+      saveAs(new Blob([buffer]), `${schoolName}_${year}년_${month + 1}월_석식체크.xlsx`);
     } catch (error) {
       console.error('Excel Export Error:', error);
       alert('엑셀 파일 생성 중 오류가 발생했습니다.');
@@ -418,7 +452,8 @@ export default function Admin() {
         return;
       }
 
-      const result = await saveCheckin(staff.name, dateStr);
+      const schoolId = localStorage.getItem('school_id');
+      const result = await saveCheckin(staff.name, dateStr, schoolId);
       if (!result) {
         alert("데이터베이스 저장 요청 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         return;
@@ -441,7 +476,8 @@ export default function Admin() {
     if (confirm('정말로 모든 데이터를 초기화하시겠습니까? (이 작업은 되돌릴 수 없습니다!)')) {
       const userInput = prompt('데이터 전체 초기화를 위해 비밀번호를 입력해주세요.\n(비밀번호가 틀리면 초기화되지 않습니다)');
       if (userInput === 'Camgo!') {
-        await clearAllData();
+        const schoolId = localStorage.getItem('school_id');
+        await clearAllData(schoolId);
         // loadData(); // 실시간 동기화로 대체하여 중복 트랜잭션 제거
         alert('모든 데이터가 성공적으로 초기화되었습니다.');
       } else if (userInput !== null) {
@@ -528,7 +564,39 @@ export default function Admin() {
         <Lock size={48} color="#9ca3af" style={{ margin: '0 auto 1.5rem', display: 'block' }} />
         <h1>관리자 화면</h1>
         <p>비밀번호를 입력해주세요.</p>
-        <div className="glass-card" style={{ marginTop: '2rem' }}>
+        <div className="glass-card" style={{ marginTop: '2rem', position: 'relative' }}>
+          
+          <div style={{ position: 'relative', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder={selectedSchool.name ? `${selectedSchool.name} (선택됨)` : "먼저 소속 학교를 검색하세요"}
+              value={schoolKeyword}
+              onChange={(e) => handleSchoolSearch(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+            />
+            {schoolSuggestions.length > 0 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, background: 'white',
+                borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                maxHeight: '150px', overflowY: 'auto', zIndex: 10, marginTop: '4px'
+              }}>
+                {schoolSuggestions.map(s => (
+                  <div 
+                    key={s.id} 
+                    className="dropdown-item"
+                    onClick={() => {
+                      setSelectedSchool(s);
+                      setSchoolKeyword('');
+                      setSchoolSuggestions([]);
+                    }}
+                  >
+                    <span style={{ fontWeight: 500, color: '#111827' }}>{s.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <input 
             type="password" 
             placeholder="비밀번호" 
@@ -551,7 +619,7 @@ export default function Admin() {
     <>
       <div className="animate-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h1 style={{ textAlign: 'left', margin: 0 }}>영양교사 대시보드</h1>
+        <h1 style={{ textAlign: 'left', margin: 0 }}>{localStorage.getItem('school_name')} 대시보드</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn primary" style={{ width: 'auto', backgroundColor: '#3b82f6', color: 'white' }} onClick={() => setIsManualEntryOpen(true)}>
             수동 데이터 입력

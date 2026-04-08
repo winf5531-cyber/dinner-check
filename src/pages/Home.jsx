@@ -17,6 +17,8 @@ export default function Home() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [today] = useState(format(new Date(), 'yyyy-MM-dd'));
   const submitLock = useRef(false);
+  const schoolId = localStorage.getItem('school_id');
+  const schoolName = localStorage.getItem('school_name') || '';
 
   const displayDate = format(new Date(), 'M월 d일 (EEEE)', { locale: ko });
 
@@ -134,7 +136,7 @@ export default function Home() {
     }
 
     // 네트워크 오류 등으로 저장이 실패하면 UI 상태를 변경하지 않음
-    const result = await saveCheckin(cleanName, currentToday);
+    const result = await saveCheckin(cleanName, currentToday, schoolId);
     if (!result) {
       alert('네트워크 또는 서버 오류로 출석 체크에 실패했습니다. 다시 시도해주세요.');
       submitLock.current = false;
@@ -181,7 +183,7 @@ export default function Home() {
     const currentToday = format(new Date(), 'yyyy-MM-dd');
     const cleanName = name.replace(/\s+/g, '');
     
-    const success = await removeCheckinByNameAndDate(cleanName, currentToday);
+    const success = await removeCheckinByNameAndDate(cleanName, currentToday, schoolId);
     if (!success) {
       alert('출석 취소 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
       submitLock.current = false;
@@ -216,7 +218,8 @@ export default function Home() {
       <div className="animate-up" style={{ maxWidth: '480px', margin: '0 auto' }}>
         <div className="header">
         <Utensils size={40} color="#3b82f6" style={{ marginBottom: '10px' }} />
-        <h1>석식 체크</h1>
+        <h3 style={{ color: '#6b7280', margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 'bold' }}>{schoolName}</h3>
+        <h1 style={{ margin: 0 }}>석식 체크</h1>
         <p>오늘도 고생 많으셨습니다!</p>
       </div>
 
