@@ -137,3 +137,16 @@ CREATE INDEX IF NOT EXISTS idx_checkins_school_id ON public.checkins(school_id);
 -- [4] 네 번째 마이그레이션: 출석 데이터 중복 원천 차단 방어벽 (Unique Constraint)
 -- "같은 학교, 같은 이름, 똑같은 날짜" 에는 절대 2개의 데이터가 들어가지 못하도록 DB 자체에 물리적인 철옹성 방어벽(UNIQUE)을 칩니다.
 ALTER TABLE public.checkins ADD CONSTRAINT unique_daily_checkin UNIQUE (school_id, name, date);
+
+-- [5] 다섯 번째 마이그레이션: Data API 접근을 위한 테이블 명시적 권한(GRANT) 부여
+-- 2026년 Supabase 보안 패치에 따라 public schema의 테이블은 API 노출을 위해 명시적인 권한 부여가 필요합니다.
+-- anon(익명 사용자), authenticated(로그인 사용자), service_role(서버 권한)에 권한을 부여합니다.
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+GRANT ALL PRIVILEGES ON TABLE public.checkins TO anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON TABLE public.staffs TO anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON TABLE public.schools TO anon, authenticated, service_role;
+
+-- sequence (identity/serial 등)에 대한 권한 부여 (ID 자동 증가 컬럼 대응)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+
